@@ -11,19 +11,6 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-/*
-  dodano:
-  obsługa cen brutto/netto (obecnie brutto)
-  UPDATE combinations and stock
-
-  poprawiono/zmieniono:
-  1) jesli jest opcja 'atrybuty==1' id_tax zamieniono na id_tax_rules_group /ponieważ nie ma id_tax w ps_products/
-  5) dodano else i ustawienie zmiennej na 0, gdy nie zdefiniowana, m.in $zerowanie
-  7) poprawiono if'a z spr.. filtra i strpos w //szukamy wg filtra_1, blad empty needle
-  11) usunięto sprawdzanie, czy marza_plus jest == ""
-  13) zerowanie - opcja jest disabled
-
- */
 
 class AktCsv extends Module {
 

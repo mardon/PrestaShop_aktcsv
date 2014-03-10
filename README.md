@@ -15,6 +15,7 @@ based on AktCSV from sokon.pl for PS 1.4 [PL]
   - resume the import if the maximum run time is exceeded
   - products with a price of zero may automatically be deactivated
   - chceck for update
+  - zero prices and quantity before update
 
 More info [PL]:
 http://prestadesign.pl/moduly-f13/aktualizacja-cen-i-stanow-z-csv-t1165-110.html
