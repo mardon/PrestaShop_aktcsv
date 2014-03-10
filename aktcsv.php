@@ -1,5 +1,4 @@
 <?php
-
 /*
   Module Name: AktCSV
   Module URI: https://github.com/Lechus
@@ -7,23 +6,7 @@
   Version: 3.0
   Author: Leszek Pietrzak
   Author URI: https://github.com/Lechus
-
-  Notice:
-  Module based on AktCSV 2.0 by Sokon.pl for PS 1.4 [PL]
-  Not finished!
-  You need add to /config/settings.inc.php:
-  define('_DB_SER_', 'localhost'); //Database server address
-  define('_DB_PORT_', '3306');     //Database server port
-
-  Multishop feature - untested.
-
-  Features not yet implemented:
-  - resume the import if the maximum run time is exceeded
-  - products with a price of zero may automatically be deactivated
-  - chceck for update
-
  */
-
 
 if (!defined('_PS_VERSION_')) {
     exit;
