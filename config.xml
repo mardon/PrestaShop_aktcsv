@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <module>
+            <name>aktcsv</name>
+            <displayName><![CDATA[Aktualizacja z CSV]]></displayName>
+            <version><![CDATA[2]]></version>
+            <description><![CDATA[Aktualizuje ceny i stany z pliku .CSV]]></description>
+            <author><![CDATA[]]></author>
+            <tab><![CDATA[Moduły Sokon.pl]]></tab>
+	<confirmUninstall>Chcesz mnie odinstalować?</confirmUninstall>
+            <is_configurable>1</is_configurable>
+            <need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+        </module>
