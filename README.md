@@ -1,11 +1,11 @@
-PrestaShop_aktcsv [current status = not working]
+PrestaShop_aktcsv [not working]
 ================================================
 
 Update price and stock quantity in PrestaShop 1.5.6 from CSV
 
 based on AktCSV from sokon.pl for PS 1.4 [PL]
 
-Download aktcsv.zip from zip subfolder
+Download working aktcsv.zip from zip subfolder
 Install in PrestaShop 1.5.6
 You need add to /config/settings.inc.php:
   define('_DB_SER_', 'localhost'); //Database server address
@@ -26,7 +26,7 @@ Moduł aktualizacyjny stany magazynowe i ceny produktów w PrestaShop 1.5.6.1
 Plik aktcsv_ps14.php - oryginał, dla wersji PS 1.4.
 
 Instalacja
-- Zapisz aktcsv.zip z podkatalogu zip na dysk
+- Zapisz działający aktcsv.zip z podkatalogu zip na dysk
 - Panel administracyjny -> Dodaj moduł ->Zainstaluj
 - Edytuj plik /config/settings.inc.php:
   define('_DB_SER_', 'localhost'); //wpisz poprawny adres serwera
