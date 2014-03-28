@@ -25,10 +25,10 @@ class AktCsv extends Module {
         parent::__construct();
 
         $this->page = basename(__FILE__, '.php');
-        $this->displayName = $this->l('Aktualizacja z CSV');
-        $this->description = $this->l('Aktualizuje ceny i stany z pliku .CSV');
+        $this->displayName = $this->l('Update from CSV');
+        $this->description = $this->l('Update price and stock from CSV file.');
 
-        $this->confirmUninstall = $this->l('Chcesz mnie odinstalować?');
+        $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
     }
 
     function install() {
@@ -36,9 +36,6 @@ class AktCsv extends Module {
             return false;
         }
         // Set some defaults
-        
-        //Nie działa $this->name - problem przy instalacji.
-        //Configuration::updateValue($this->name . '_SEPARATOR', ';');
         Configuration::updateValue('aktcsv_SEPARATOR', ';');
         Configuration::updateValue('aktcsv_NUMER', 'reference');
         Configuration::updateValue('aktcsv_MARZA', '2.00');
@@ -156,7 +153,7 @@ Moduł można w prosty sposób dostosować do swoich potrzeb (kod modułu jest d
         $this->_html .= $this->displayConfirmation('File uploaded. <br/>You send file: <b>"' . Configuration::get($this->name . '_CSVFILE') . '"</b>, size: <b>' . $_FILES['csv_filename']['size'] . '</b> bytes.<br />');
     }
 
-    private function _updateDB() {
+    public function _updateDB() {
         $codeStart = microtime(true);
 
         $separator = Tools::getValue("separator");
@@ -284,50 +281,50 @@ Moduł można w prosty sposób dostosować do swoich potrzeb (kod modułu jest d
                 . 'In file "missed_products.txt" I wrote: <b>' . $filtr1 . '</b> (number of records: <b>' . $dopliku . '</b>).<br/>');
     }
 
-    private function _clearCVSPrice($priceToClear) {
+    public function _clearCVSPrice($priceToClear) {
         $price = str_replace(",", ".", $priceToClear);
         return str_replace(" ", "", $price);
     }
 
-    private function _clearCVSIlosc($amountToClear) {
+    public function _clearCVSIlosc($amountToClear) {
         return str_replace(">", "", $amountToClear);
     }
 
-    private function _calculateAndFormatNetPrice($price, $taxRate) {
+    public function _calculateAndFormatNetPrice($price, $taxRate) {
         $priceGross = number_format($price, 2, ".", "");
         $taxRate = ($taxRate + 100) / 100;
         return number_format(($priceGross / $taxRate), 2, ".", "");
     }
     
-    private function _getTaxRate($idProduct, $id_shop) {
+    public function _getTaxRate($idProduct, $id_shop) {
         $idTax = Db::getInstance()->getValue('SELECT id_tax_rules_group FROM ' . _DB_PREFIX_ . 'product_shop WHERE id_product = \'' . $idProduct . '\' AND id_shop=\'' . $id_shop . '\' ');
         return Db::getInstance()->getValue('SELECT rate FROM ' . _DB_PREFIX_ . 'tax WHERE id_tax = \'' . $idTax . '\' ');
     }
 
-    private function updateProductPriceInShop($priceNet, $idProduct, $id_shop) {
+    public function updateProductPriceInShop($priceNet, $idProduct, $id_shop) {
         $queryUpdatePrice = 'UPDATE ' . _DB_PREFIX_ . 'product_shop SET price = \'' . $priceNet . '\', date_upd=NOW() WHERE ';
         $queryUpdatePrice .= ' id_product = \'' . $idProduct . '\' ';
         $queryUpdatePrice .= ' AND id_shop = \'' . $id_shop . '\' ';
         $this->db->query($queryUpdatePrice);
     }
 
-    private function updateProductWithAttribute($priceNet, $quantity, $numer, $ref) {
+    public function updateProductWithAttribute($priceNet, $quantity, $numer, $ref) {
         $queryUpdatePriceAndQuantity = 'UPDATE ' . _DB_PREFIX_ . 'product_attribute SET quantity = \'' . $quantity . '\', price = \'' . $priceNet . '\' WHERE ';
         $queryUpdatePriceAndQuantity .= '' . $numer . '=\'' . $ref . '\' ';
         $this->db->query($queryUpdatePriceAndQuantity);
         
     }
 
-    private function updateProductithOutAttribute($priceNet, $quantity, $numer, $ref) {
+    public function updateProductithOutAttribute($priceNet, $quantity, $numer, $ref) {
         $queryUpdateQuantity = 'UPDATE ' . _DB_PREFIX_ . 'product SET quantity = \'' . $quantity . '\', price = \'' . $priceNet . '\' WHERE ';
         $queryUpdateQuantity .= '' . $numer . '=\'' . $ref . '\' ';
         $this->db->query($queryUpdateQuantity);
     }
 
-    private function _getIdProductAttribute($numer, $ref) {
+    public function _getIdProductAttribute($numer, $ref) {
         return Db::getInstance()->getValue('SELECT id_product_attribute FROM ' . _DB_PREFIX_ . 'product_attribute WHERE ' . $numer . '=\'' . $ref . '\' ', 0);
     }
 
 }
 
-// End of: aktcsv.php
+// End of: aktcsv_en.php
