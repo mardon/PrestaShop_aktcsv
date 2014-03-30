@@ -25,7 +25,7 @@ class AktCsv extends Module {
 
         parent::__construct();
 
-        //$this->page = basename(__FILE__, '.php');
+        $this->page = basename(__FILE__, '.php');
         $this->displayName = $this->l('Aktualizacja z CSV');
         $this->description = $this->l('Aktualizuje ceny i stany z pliku .CSV');
 
