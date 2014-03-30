@@ -5,7 +5,7 @@ Update price and stock quantity in PrestaShop 1.5.6 from CSV
 
 based on AktCSV from sokon.pl for PS 1.4 [PL]
 
-Download working aktcsv.zip from zip subfolder
+Download working [PL] aktcsv.zip from zip subfolder
 Install in PrestaShop 1.5.6
 You need add to /config/settings.inc.php:
   define('_DB_SER_', 'localhost'); //Database server address
@@ -31,6 +31,9 @@ Instalacja
 - Edytuj plik /config/settings.inc.php:
   define('_DB_SER_', 'localhost'); //wpisz poprawny adres serwera
   define('_DB_PORT_', '3306');     //wpisz poprawny numer portu
+
+[PHP]
+max_input_vars >1000
 
 More info [PL]:
 http://prestadesign.pl/moduly-f13/aktualizacja-cen-i-stanow-z-csv-t1165-110.html
