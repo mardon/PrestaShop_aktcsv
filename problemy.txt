@@ -1,9 +1,0 @@
-Problem z instalacja nowej wersji pluginu:
-
-http://www.phpkode.com/source/p/prestashop-e-commerce-solution/prestashop/classes/module/Module.php
-if (!Validate::isModuleName($module_name))
-0864	        {
-0865	            if (_PS_MODE_DEV_)
-0866	                die(Tools::displayError($module_name.' is not a valid module name.'));
-0867	            return false;
-0868	        }
