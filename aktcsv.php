@@ -2,7 +2,7 @@
 /*
   Module Name: AktCSV
   Module URI: https://github.com/Lechus
-  Description: Update stock and price of products in Prestashop 1.5.6
+  Description: Aktualizuje stany i ceny w Prestashop 1.5.6
   Version: 3.0
   Author: Leszek Pietrzak
   Author URI: https://github.com/Lechus
@@ -15,16 +15,17 @@ if (!defined('_PS_VERSION_')) {
 class AktCsv extends Module {
 
     private $_html = '';
-    protected $db;
-    
+    private $db;
+
     function __construct() {
         $this->name = 'aktcsv';
-        $this->tab = 'LPP';
-        $this->version = 3.0;
+        $this->tab = 'Others';
+        $this->version = '3.0';
+        $this->author = 'LPP';
 
         parent::__construct();
 
-        $this->page = basename(__FILE__, '.php');
+        //$this->page = basename(__FILE__, '.php');
         $this->displayName = $this->l('Aktualizacja z CSV');
         $this->description = $this->l('Aktualizuje ceny i stany z pliku .CSV');
 
@@ -32,26 +33,32 @@ class AktCsv extends Module {
     }
 
     function install() {
+        if (version_compare(_PS_VERSION_, '1.5', '<')) {
+            $this->_errors[] = $this->l('Wymagana PrestaShop 1.5.');
+            return false;
+        }
+
         if (parent::install() == false) {
             return false;
         }
-        // Set some defaults
-        
-        //Nie działa $this->name - problem przy instalacji.
-        //Configuration::updateValue($this->name . '_SEPARATOR', ';');
-        Configuration::updateValue('aktcsv_SEPARATOR', ';');
-        Configuration::updateValue('aktcsv_NUMER', 'reference');
-        Configuration::updateValue('aktcsv_MARZA', '2.00');
-        Configuration::updateValue('aktcsv_MARZAPLUS', '0');
-        Configuration::updateValue('aktcsv_LIMIT', '1');
-        Configuration::updateValue('aktcsv_FILTR1', '');
-        Configuration::updateValue('aktcsv_CSVFILE', '');
+        // Ustawienia domyślne
+        Configuration::updateValue($this->name . '_SEPARATOR', ';');
+        Configuration::updateValue($this->name . '_NUMER', 'reference');
+        Configuration::updateValue($this->name . '_MARZA', '2.00');
+        Configuration::updateValue($this->name . '_MARZAPLUS', '0');
+        Configuration::updateValue($this->name . '_LIMIT', '1');
+        Configuration::updateValue($this->name . '_FILTR1', '');
+        Configuration::updateValue($this->name . '_CSVFILE', '');
         return true;
     }
 
-    //The getContent() function is called when the Configure link on a module is clicked.
+    public function uninstall() {
+        return parent::uninstall() && Configuration::deleteByName($this->name . '_SEPARATOR') && Configuration::deleteByName($this->name . '_NUMER') && Configuration::deleteByName($this->name . '_MARZA') && Configuration::deleteByName($this->name . '_MARZAPLUS') && Configuration::deleteByName($this->name . '_LIMIT') && Configuration::deleteByName($this->name . '_FILTR1') && Configuration::deleteByName($this->name . '_CSVFILE');
+    }
+
+    //Funkcja getContent() po kliknięciu w link "Konfiguruj"
     public function getContent() {
-        //TODO: Implement Check for updates
+        //TODO: Sprawdzanie aktualizacji modułu
 
         $this->_html .= '<h2>' . $this->displayName . '</h2>';
 
@@ -71,7 +78,7 @@ class AktCsv extends Module {
 
     public function displayForm() {
         $shop_name = '';
-        $id_shop   = 0;
+        $id_shop = 0;
 
         if (Shop::getContext() != Shop::CONTEXT_GROUP) {
             $context = Context::getContext();
@@ -79,35 +86,35 @@ class AktCsv extends Module {
             $shop_name = $context->shop->domain;
         }
 
-        $this->_html = '
-<fieldset><legend>' . $this->l('Choose a CSV file') . ' "*.csv" ' . $this->l('(cat no; name; price; amount)') . '</legend>
+        $this->_html .= '
+<fieldset><legend>' . $this->l('Wybierz plik CSV') . ' "*.csv" ' . $this->l('(nr kat; nazwa; cena; ilość)') . '</legend>
 <form method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
 <input type="file" name="csv_filename" />
-<input type="submit" name="submit_csv" value="' . $this->l('Upload file') . '" class="button" />
+<input type="submit" name="submit_csv" value="' . $this->l('Wyślij ten plik na serwer') . '" class="button" />
 </form></fieldset>
 <br />
 <br />
-<fieldset><legend>' . $this->l('Main module functions') . '</legend>
+<fieldset><legend>' . $this->l('Główne funkcje modułu') . '</legend>
 
 <form method="post"  action="' . $_SERVER['REQUEST_URI'] . '"> 
-' . $this->l('Update DB from file:') . ' <b>' . Configuration::get($this->name . '_CSVFILE') . '</b><br />
-<input type="text" name="separator" value="' . Configuration::get($this->name . '_SEPARATOR') . '" size="10"> ' . $this->l('Separator character *.csv') . '</input><br /><br />
+' . $this->l('Aktualizacja przeprowadzona będzie z pliku:') . ' <b>' . Configuration::get($this->name . '_CSVFILE') . '</b><br />
+<input type="text" name="separator" value="' . Configuration::get($this->name . '_SEPARATOR') . '" size="10"> ' . $this->l('Separator pól w pliku *.csv') . '</input><br /><br />
 <select name="numer">
-  <option value="supplier_reference"> Supplier reference</option>
-  <option value="reference" selected="selected"> Reference</option>
-  <option value="ean13"> EAN13</option></select> ' . $this->l('Choose type of 1. column') . '<br />
-<input type="text" name="marza" value="' . Configuration::get($this->name . '_MARZA') . '" size="11"> ' . $this->l('Set profit? (ex. 1.20 - 20%)') . '</input><br />
+  <option value="supplier_reference"> Nr ref. dostawcy</option>
+  <option value="reference" selected="selected"> Kod produktu</option>
+  <option value="ean13"> Kod EAN13</option></select> ' . $this->l('Wybierz numeru 1 kol.') . '<br />
+<input type="text" name="marza" value="' . Configuration::get($this->name . '_MARZA') . '" size="11"> ' . $this->l('Jaką ustalamy marżę? (np. 1.20 - 20%)') . '</input><br />
 
-<input type="text" name="marza_plus" value="' . Configuration::get($this->name . '_MARZAPLUS') . '" size="11"> ' . $this->l('Constant profit added to price') . '</input><br />
+<input type="text" name="marza_plus" value="' . Configuration::get($this->name . '_MARZAPLUS') . '" size="11"> ' . $this->l('Stała kwota dodawana do ceny poza marżą') . '</input><br />
 <select name="brutto">
-  <option value="1" selected="selected">Gross</option>
-  <option value="0" disabled> Net</option>
+  <option value="1" selected="selected">Brutto</option>
+  <option value="0" disabled> Netto</option>
   <option value="0" disabled> -- ---- -------------</option>
-  </select> ' . $this->l('Price type') . '<br /><br />
+  </select> ' . $this->l('Ceny produktów') . '<br /><br />
       
-<input type="checkbox" name="zerowanie" value="tak" disabled /> ' . $this->l('Zero prices and stocks?') . '<br />
-<input type="checkbox" name="atrybuty" value="tak" checked="checked" /> ' . $this->l('Products with attributes?') . '<br /><br />
+<input type="checkbox" name="zerowanie" value="tak" disabled /> ' . $this->l('Zerować stany i ceny?') . '<br />
+<input type="checkbox" name="atrybuty" value="tak" checked="checked" /> ' . $this->l('Mam w bazie produkty z atrybutami') . '<br /><br />
 
 <p><b>' . $this->l('Opcje tworzenia pliku z brakującymi produktami') . '</b></p>
 <input type="checkbox" name="productNotInDB" value="tak" checked="checked" /> ' . $this->l('Sprawdzać produkty których nie ma w sklepie a są w pliku *csv?') . '<br />
@@ -122,19 +129,16 @@ class AktCsv extends Module {
 <br />
 <br />
 <fieldset>
-<legend>' . $this->l('Addons') . '</legend>
-<p>' . $this->l('missed products log file:') . ' <b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . $this->name . '/missed_products.txt">missed_products.txt</a></b></p>
+<legend>' . $this->l('Dodatki') . '</legend>
+<p>' . $this->l('Ostatnio wygenerowany plik z brakującymi produktam:') . ' <b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/missed_products.txt">missed_products.txt</a></b></p>
 </fieldset>
 <br />
 <br />
 <br />
 <fieldset>
-<legend><img src="../img/admin/comment.gif"/>Description</legend>
-<p style="text-align:center;">Need help or modification? Contact with us:<br />
-Origininal code for PS 1.4
-www: <b><a href="http://www.sokon.pl">Sokon.pl</a></b><br />
-e-mail: <b><a href="mailto:sokon@sokon.pl">sokon@sokon.pl</a></b><br />
-Modified for PS 1.5.6.1: <b><a href="mailto:leszek.pietrzak@gmail.com">Leszek.Pietrzak@gmail.com</a></b><br />
+<legend><img src="../img/admin/comment.gif"/>Informacje</legend>
+<p style="text-align:center;">Potrzebujesz pomocy, modyfikacji?<br />
+ PS 1.5.6: <b><a href="mailto:leszek.pietrzak@gmail.com">Leszek.Pietrzak@gmail.com</a></b><br />
 </p><br />
 <p>
 Moduł ten aktualizuje ceny oraz stany magazynowe z pliku *.csv . Plik musi mieć nastepującą postać:<br /> 
@@ -150,10 +154,11 @@ Moduł można w prosty sposób dostosować do swoich potrzeb (kod modułu jest d
     private function _uploadCSVFile() {
         $uploadedFile = $_FILES['csv_filename'];
         if (isset($uploadedFile['name'])) {
-            move_uploaded_file($uploadedFile['tmp_name'], '../modules/' . $this->name . '/' . $uploadedFile['name']);
+            move_uploaded_file($uploadedFile['tmp_name'], '../modules/' . 'aktcsv/' . $uploadedFile['name']);
             Configuration::updateValue($this->name . '_CSVFILE', $uploadedFile['name']);
         }
-        $this->_html .= $this->displayConfirmation('File uploaded. <br/>You send file: <b>"' . Configuration::get($this->name . '_CSVFILE') . '"</b>, size: <b>' . $_FILES['csv_filename']['size'] . '</b> bytes.<br />');
+        $this->_html .= $this->displayConfirmation('Plik załadowany. <br/>Załadowałeś plik: <b>"' . Configuration::get($this->name . '_CSVFILE') . '"</b>, size: <b>' . $_FILES['csv_filename']['size'] . '</b> bytes.<br />');
+        Logger::addLog('AktCSV module: Plik załadowany.');
     }
 
     private function _updateDB() {
@@ -202,7 +207,7 @@ Moduł można w prosty sposób dostosować do swoich potrzeb (kod modułu jest d
             $price += $marza_plus;
 
             //Product without attribute
-            $idProduct = (int)Db::getInstance()->getValue('SELECT id_product FROM `' . _DB_PREFIX_ . 'product` WHERE ' . $numer . '=\'' . $data[0] . '\' ', 0);
+            $idProduct = (int) Db::getInstance()->getValue('SELECT id_product FROM `' . _DB_PREFIX_ . 'product` WHERE ' . $numer . '=\'' . $data[0] . '\' ', 0);
 
             if ($idProduct > 0) {
                 $zmian_p++;
@@ -212,28 +217,28 @@ Moduł można w prosty sposób dostosować do swoich potrzeb (kod modułu jest d
                 $taxRate = $this->_getTaxRate($idProduct, $id_shop);
                 $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
 
-                $this->updateProductPriceInShop($priceNet, $idProduct, $id_shop);
-                $this->updateProductithOutAttribute($priceNet, $quantity, $numer, $data[0]);
+                $this->_updateProductPriceInShop($priceNet, $idProduct, $id_shop);
+                $this->_updateProductithOutAttribute($priceNet, $quantity, $numer, $data[0]);
             }
-            
+
             //Product with attribute
             if ($atrybuty == 1) {
-                $idProduct_atr = (int)Db::getInstance()->getValue('SELECT id_product FROM `' . _DB_PREFIX_ . 'product_attribute` WHERE ' . $numer . '=\'' . $data[0] . '\' ', 0);
+                $idProduct_atr = (int) Db::getInstance()->getValue('SELECT id_product FROM `' . _DB_PREFIX_ . 'product_attribute` WHERE ' . $numer . '=\'' . $data[0] . '\' ', 0);
 
                 if ($idProduct_atr > 0) {
                     $zmian_a++;
                     $idProductAttribute = $this->_getIdProductAttribute($numer, $data[0]);
 
                     StockAvailable::setQuantity($idProduct, $idProduct_atrAttribute, $quantity, $id_shop);
-  
+
                     $taxRate = $this->_getTaxRate($idProduct_atr, $id_shop);
                     $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
 
-                    $this->updateProductPriceInShop($priceNet, $idProduct_atr, $id_shop);
-                    $this->updateProductWithAttribute($priceNet, $quantity, $numer, $data[0]);
+                    $this->_updateProductPriceInShop($priceNet, $idProduct_atr, $id_shop);
+                    $this->_updateProductWithAttribute($priceNet, $quantity, $numer, $data[0]);
                 }
             }
-            
+
             if ($productNotInDB == 1) {
                 //szukamy wg filtra_1
                 if ($idProduct == '' && $idProduct_atr == '') {    // nie znaleziono produktu ani bez Atr, ani z Atrybutem
@@ -298,27 +303,26 @@ Moduł można w prosty sposób dostosować do swoich potrzeb (kod modułu jest d
         $taxRate = ($taxRate + 100) / 100;
         return number_format(($priceGross / $taxRate), 2, ".", "");
     }
-    
+
     private function _getTaxRate($idProduct, $id_shop) {
         $idTax = Db::getInstance()->getValue('SELECT id_tax_rules_group FROM ' . _DB_PREFIX_ . 'product_shop WHERE id_product = \'' . $idProduct . '\' AND id_shop=\'' . $id_shop . '\' ');
         return Db::getInstance()->getValue('SELECT rate FROM ' . _DB_PREFIX_ . 'tax WHERE id_tax = \'' . $idTax . '\' ');
     }
 
-    private function updateProductPriceInShop($priceNet, $idProduct, $id_shop) {
+    private function _updateProductPriceInShop($priceNet, $idProduct, $id_shop) {
         $queryUpdatePrice = 'UPDATE ' . _DB_PREFIX_ . 'product_shop SET price = \'' . $priceNet . '\', date_upd=NOW() WHERE ';
         $queryUpdatePrice .= ' id_product = \'' . $idProduct . '\' ';
         $queryUpdatePrice .= ' AND id_shop = \'' . $id_shop . '\' ';
         $this->db->query($queryUpdatePrice);
     }
 
-    private function updateProductWithAttribute($priceNet, $quantity, $numer, $ref) {
+    private function _updateProductWithAttribute($priceNet, $quantity, $numer, $ref) {
         $queryUpdatePriceAndQuantity = 'UPDATE ' . _DB_PREFIX_ . 'product_attribute SET quantity = \'' . $quantity . '\', price = \'' . $priceNet . '\' WHERE ';
         $queryUpdatePriceAndQuantity .= '' . $numer . '=\'' . $ref . '\' ';
         $this->db->query($queryUpdatePriceAndQuantity);
-        
     }
 
-    private function updateProductithOutAttribute($priceNet, $quantity, $numer, $ref) {
+    private function _updateProductithOutAttribute($priceNet, $quantity, $numer, $ref) {
         $queryUpdateQuantity = 'UPDATE ' . _DB_PREFIX_ . 'product SET quantity = \'' . $quantity . '\', price = \'' . $priceNet . '\' WHERE ';
         $queryUpdateQuantity .= '' . $numer . '=\'' . $ref . '\' ';
         $this->db->query($queryUpdateQuantity);
@@ -331,3 +335,4 @@ Moduł można w prosty sposób dostosować do swoich potrzeb (kod modułu jest d
 }
 
 // End of: aktcsv.php
+?>
