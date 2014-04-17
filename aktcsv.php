@@ -3,8 +3,8 @@
 /*
   Module Name: AktCSV
   Module URI: https://github.com/Lechus
-  Description: Aktualizuje stany i ceny w Prestashop 1.5.6
-  Version: 3.0
+  Description: Aktualizuje stany i ceny w Prestashop 1.5.6, 1.6.6
+  Version: 3.1
   Author: Leszek Pietrzak
   Author URI: https://github.com/Lechus
  * 
@@ -23,7 +23,7 @@ class AktCsv extends Module {
     function __construct() {
         $this->name = 'aktcsv';
         $this->tab = 'Others';
-        $this->version = '3.0';
+        $this->version = '3.1';
         $this->author = 'LPP';
 
         parent::__construct();
