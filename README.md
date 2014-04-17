@@ -1,7 +1,7 @@
 PrestaShop_aktcsv
 ================================================
 
-Update price and stock quantity in PrestaShop 1.5.6 from CSV
+Update price and stock (or just stock) quantity in PrestaShop 1.5.6 and 1.6.6 from CSV
 
 based on AktCSV from sokon.pl for PS 1.4 [PL]
 
@@ -21,7 +21,7 @@ You need add to /config/settings.inc.php:
   - zero prices and quantity before update
 
 [PL]
-Moduł aktualizacyjny stany magazynowe i ceny produktów w PrestaShop 1.5.6
+Moduł aktualizacyjny stany magazynowe i ceny produktów (lub tylko stany) w PrestaShop 1.5.6 i 1.6.6
 
 Plik aktcsv_ps14.php - oryginał, dla wersji PS 1.4.
 
