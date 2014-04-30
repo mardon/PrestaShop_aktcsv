@@ -37,3 +37,7 @@ In php.ini SET max_input_vars >1000
 
 More info [PL]:
 http://prestadesign.pl/moduly-f13/aktualizacja-cen-i-stanow-z-csv-t1165-110.html
+
+[Notice]
+My coding skills are far from perfect, I am aware that there are significant improvements
+that can be made to this, so if you have any, instead of criticising,  please suggest!
