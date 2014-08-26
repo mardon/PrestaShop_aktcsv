@@ -17,8 +17,8 @@ if (!defined('_PS_VERSION_')) {
 
 class AktCsv extends Module {
 
-    private $_html = '';
-    private $db;
+    private $_html = '';                                                        // used to store the html output for the back-office
+    private $db;                                                                // used to connect to DataBase
 
     function __construct() {
         $this->name = 'aktcsv';
@@ -36,7 +36,7 @@ class AktCsv extends Module {
     }
 
     public function install() {
-        if (version_compare(_PS_VERSION_, '1.5', '<')) {
+        if (version_compare(_PS_VERSION_, '1.5', '<')) {                        // let's check the PrestaShop version here
             $this->_errors[] = $this->l('Wymagana PrestaShop minimum 1.5.');
             return false;
         }
