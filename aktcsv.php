@@ -92,8 +92,8 @@ class AktCsv extends Module {
         $this->_html .= '
 <fieldset>
 <legend>'
-                . $this->l('Wybierz plik CSV') . ' "*.csv" ' . $this->l('(nr kat; nazwa; cena; ilość)') . ' lub ' . $this->l('(index; ilość)')
-                . '</legend>
+            . $this->l('Wybierz plik CSV') . ' "*.csv" ' . $this->l('(nr kat; nazwa; cena; ilość)') . ' lub ' . $this->l('(index; ilość)')
+            . '</legend>
 <form method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
 <input type="file" name="csv_filename" />
@@ -144,7 +144,7 @@ class AktCsv extends Module {
 <fieldset>
 <legend>' . $this->l('Dodatki') . '</legend>
 <p>' . $this->l('Ostatnio wygenerowany plik z brakującymi produktam:') . ' '
-                . '<b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/missed_products.txt">missed_products.txt</a></b>
+            . '<b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/missed_products.txt">missed_products.txt</a></b>
                  </p>
 </fieldset>
 <br />
@@ -177,8 +177,8 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             Configuration::updateValue($this->name . '_CSVFILE', $uploadedFile['name']);
         }
         $this->_html .= $this->displayConfirmation('Plik załadowany. <br/>Załadowałeś plik: '
-                . '<b>"' . Configuration::get($this->name . '_CSVFILE') . '"</b>,'
-                . ' size: <b>' . $_FILES['csv_filename']['size'] . '</b> bytes.<br />');
+            . '<b>"' . Configuration::get($this->name . '_CSVFILE') . '"</b>,'
+            . ' size: <b>' . $_FILES['csv_filename']['size'] . '</b> bytes.<br />');
         Logger::addLog('AktCSV module: Plik załadowany.');
     }
 
@@ -254,7 +254,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             //Product with attribute
             if ($atrybuty == 1) {
                 $idProduct_atr = (int) Db::getInstance()->getValue('SELECT id_product FROM `' . _DB_PREFIX_ . 'product_attribute`'
-                        . ' WHERE ' . $numer . '=\'' . $reference . '\' ', 0);
+                    . ' WHERE ' . $numer . '=\'' . $reference . '\' ', 0);
 
                 if ($idProduct_atr > 0) {
                     $zmian_a++;
@@ -275,7 +275,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
                 //szukamy wg filtra_1
                 if ($idProduct == '' && $idProduct_atr == '') {    // nie znaleziono produktu ani bez Atr, ani z Atrybutem
                     if ((($filtr1 == "") && ($price != "0.00") && ($quantity >= $limit)) or
-                            (($filtr1 != "") && (strpos($quantity, $filtr1, 0) !== false) && ($price != "0.00") && ($quantity >= $limit))) {
+                        (($filtr1 != "") && (strpos($quantity, $filtr1, 0) !== false) && ($price != "0.00") && ($quantity >= $limit))) {
                         $log .= 'Nieznaleziony produkt w bazie: indeks - <b>' . $reference . '</b> nazwa - <b>' . $quantity . '</b> cena - <b>' . $price . '</b>  ilość - <b>' . $quantity . '</b><br />';
                         fwrite($handleNotInDB, "\n\r");
                         fwrite($handleNotInDB, 'Nieznaleziony produkt w bazie: Indeks - ' . $reference . '  nazwa - ' . $quantity . '   cena - ' . $price . '   ilość - ' . $quantity);
@@ -316,9 +316,9 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         $elapsedTime = round($codeEnd - $codeStart, 2);
 
         $this->_html .= $this->displayConfirmation('<b>Success</b><br/>Products quantity in file ' . Configuration::get($this->name . '_CSVFILE') . ':'
-                . ' <b>' . $wpisow . '</b><br/>Modified products: <b>' . $zmian_p . '</b><br />Modiefied attributes: <b>' . $zmian_a . '</b><br />'
-                . 'Set profit: <b>' . (($marza - 1) * 100) . '%.</b><br/>Execution time: <b>' . $elapsedTime . '</b> seconds<br/>'
-                . 'In file "missed_products.txt" I wrote: <b>' . $filtr1 . '</b> (number of records: <b>' . $dopliku . '</b>).<br/>');
+            . ' <b>' . $wpisow . '</b><br/>Modified products: <b>' . $zmian_p . '</b><br />Modiefied attributes: <b>' . $zmian_a . '</b><br />'
+            . 'Set profit: <b>' . (($marza - 1) * 100) . '%.</b><br/>Execution time: <b>' . $elapsedTime . '</b> seconds<br/>'
+            . 'In file "missed_products.txt" I wrote: <b>' . $filtr1 . '</b> (number of records: <b>' . $dopliku . '</b>).<br/>');
     }
 
     private function _clearCSVPrice($priceToClear) {
@@ -364,5 +364,3 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         return Db::getInstance()->getValue('SELECT id_product_attribute FROM ' . _DB_PREFIX_ . 'product_attribute WHERE ' . $numer . '=\'' . $ref . '\' ', 0);
     }
 }
-
-// End of: aktcsv.php
