@@ -4,11 +4,12 @@
   Module Name: AktCSV
   Module URI: https://github.com/Lechus
   Description: Aktualizuje stany i ceny w Prestashop 1.5.6.2, 1.6.6
-  Version: 3.1
+  Version: 3.2
   Author: Leszek Pietrzak
   Author URI: https://github.com/Lechus
  * 
  * 2014-04-11: PrestaShop 1.6.6, updating stocks only.
+ * 2014-09-29: updating price only
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -20,10 +21,15 @@ class AktCsv extends Module {
     private $_html = '';                                                        // used to store the html output for the back-office
     private $db;                                                                // used to connect to DataBase
 
+    const PRICE_ONLY = 3;
+    const STOCK_ONLY = 1;
+    const PRICE_STOCK = 2;
+
+
     function __construct() {
         $this->name = 'aktcsv';
         $this->tab = 'Others';
-        $this->version = '3.1';
+        $this->version = '3.2';
         $this->author = 'LPP';
 
         parent::__construct();
@@ -110,6 +116,7 @@ class AktCsv extends Module {
 <select name="rodzaj_aktualizacji">
   <option value="2" selected="selected">Ceny i stany</option>
   <option value="1"> Tylko stany</option>
+  <option value="3"> Tylko ceny</option>
   <option value="2" disabled> -- ---- -------------</option>
 </select> ' . $this->l('Rodzaj aktualizacji') . '<br /><br />
 
@@ -153,7 +160,7 @@ class AktCsv extends Module {
 <fieldset>
 <legend><img src="../img/admin/comment.gif"/>Informacje</legend>
 <p style="text-align:center;">Potrzebujesz pomocy, modyfikacji?<br />
- PS 1.5.6: <b><a href="mailto:leszek.pietrzak@gmail.com">Leszek.Pietrzak@gmail.com</a></b><br />
+ PS 1.5.6.2: <b><a href="mailto:leszek.pietrzak@gmail.com">Leszek.Pietrzak@gmail.com</a></b><br />
 </p><br />
 <p>
 Moduł ten aktualizuje ceny oraz stany magazynowe z pliku *.csv . Plik musi mieć nastepującą postać:<br /> 
@@ -203,7 +210,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
 
         $productNotInDB = (Tools::getValue("productNotInDB") == "tak") ? 1 : 0;
         $zerowanie = (Tools::getValue("zerowanie") == "tak") ? 1 : 0;
-        $atrybuty = (Tools::getValue("atrybuty") == "tak") ? 1 : 0;
+        $attributes = (Tools::getValue("atrybuty") == "tak") ? 1 : 0;
         $id_shop = (int) Tools::getValue("id_shop");
 
 //Poprawka by KSEIKO
@@ -225,15 +232,26 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             $wpisow++;
 
             $reference = $data[0];
-            //Only stocks
-            if ($updateMode == 1) {
-                $quantity = $this->_clearCSVIlosc($data[1]);
-            } else {
-                $price = $this->_clearCSVPrice($data[2]);
-                $quantity = $this->_clearCSVIlosc($data[3]);
-                $price *= $marza;
-                $price += $marza_plus;
+
+            switch ($updateMode) {
+                case self::PRICE_ONLY:
+                    $price = $this->_clearCSVPrice($data[1]);
+                    $price *= $marza;
+                    $price += $marza_plus;
+                    break;
+                case self::STOCK_ONLY:
+                    $quantity = $this->_clearCSVIlosc($data[1]);
+                    break;
+                case self::PRICE_STOCK:
+                    $price = $this->_clearCSVPrice($data[2]);
+                    $quantity = $this->_clearCSVIlosc($data[3]);
+                    $price *= $marza;
+                    $price += $marza_plus;
+                    break;
+                 default: exit('No implemented');
+                    break;
             }
+
 
             //Product without attribute
             $idProduct = (int) Db::getInstance()->getValue('SELECT id_product FROM `' . _DB_PREFIX_ . 'product` WHERE ' . $numer . '=\'' . $reference . '\' ', 0);
@@ -241,18 +259,21 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             if ($idProduct > 0) {
                 $zmian_p++;
 
-                StockAvailable::setQuantity($idProduct, 0, $quantity, $id_shop);
-                if ($updateMode == 2) {
+                if ($updateMode == self::STOCK_ONLY || $updateMode == self::PRICE_STOCK) {
+                    StockAvailable::setQuantity($idProduct, 0, $quantity, $id_shop);
+                    $this->_updateProductWithOutAttribute($numer, $reference, null, $quantity);
+                }
+                if ($updateMode == self::PRICE_ONLY ||$updateMode == self::PRICE_STOCK ) {
                     $taxRate = $this->_getTaxRate($idProduct, $id_shop);
                     $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
 
                     $this->_updateProductPriceInShop($priceNet, $idProduct, $id_shop);
-                    $this->_updateProductithOutAttribute($priceNet, $quantity, $numer, $reference);
+                    $this->_updateProductWithOutAttribute($numer, $reference, $priceNet, null);
                 }
             }
 
             //Product with attribute
-            if ($atrybuty == 1) {
+            if ($attributes == 1) {
                 $idProduct_atr = (int) Db::getInstance()->getValue('SELECT id_product FROM `' . _DB_PREFIX_ . 'product_attribute`'
                     . ' WHERE ' . $numer . '=\'' . $reference . '\' ', 0);
 
@@ -260,13 +281,16 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
                     $zmian_a++;
                     $idProductAttribute = $this->_getIdProductAttribute($numer, $reference);
 
-                    StockAvailable::setQuantity($idProduct, $idProductAttribute, $quantity, $id_shop);
-                    if ($updateMode == 2) {
+                    if ($updateMode == self::STOCK_ONLY || $updateMode == self::PRICE_STOCK) {
+                        StockAvailable::setQuantity($idProduct, $idProductAttribute, $quantity, $id_shop);
+                        $this->_updateProductWithAttribute($numer, $reference, null, $quantity);
+                    }
+                    if ($updateMode == self::PRICE_ONLY ||$updateMode == self::PRICE_STOCK ) {
                         $taxRate = $this->_getTaxRate($idProduct_atr, $id_shop);
                         $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
 
                         $this->_updateProductPriceInShop($priceNet, $idProduct_atr, $id_shop);
-                        $this->_updateProductWithAttribute($priceNet, $quantity, $numer, $reference);
+                        $this->_updateProductWithAttribute($numer, $reference, $priceNet, null);
                     }
                 }
             }
@@ -348,16 +372,34 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         $this->db->query($queryUpdatePrice);
     }
 
-    private function _updateProductWithAttribute($priceNet, $quantity, $numer, $ref) {
-        $queryUpdatePriceAndQuantity = 'UPDATE ' . _DB_PREFIX_ . 'product_attribute SET quantity = \'' . $quantity . '\', price = \'' . $priceNet . '\' WHERE ';
-        $queryUpdatePriceAndQuantity .= '' . $numer . '=\'' . $ref . '\' ';
+    private function _updateProductWithAttribute($numer, $ref, $priceNet=null, $quantity=null) {
+        $queryUpdatePriceAndQuantity = 'UPDATE ' . _DB_PREFIX_ . 'product_attribute SET ';
+        if (!is_null($priceNet)) {
+            $queryUpdatePriceAndQuantity .= 'quantity = \'' . $quantity;
+        }
+        if (!is_null($priceNet) && !is_null($quantity)) {
+            $queryUpdatePriceAndQuantity .= ', ';
+        }
+        if (!is_null($quantity)) {
+            $queryUpdatePriceAndQuantity .= 'price = \'' . $priceNet;
+        }
+        $queryUpdatePriceAndQuantity .= ' WHERE ' . $numer . '=\'' . $ref . '\' ';
         $this->db->query($queryUpdatePriceAndQuantity);
     }
 
-    private function _updateProductithOutAttribute($priceNet, $quantity, $numer, $ref) {
-        $queryUpdateQuantity = 'UPDATE ' . _DB_PREFIX_ . 'product SET quantity = \'' . $quantity . '\', price = \'' . $priceNet . '\' WHERE ';
-        $queryUpdateQuantity .= '' . $numer . '=\'' . $ref . '\' ';
-        $this->db->query($queryUpdateQuantity);
+    private function _updateProductWithOutAttribute($numer, $ref, $priceNet=null, $quantity=null) {
+        $queryUpdatePriceAndQuantity = 'UPDATE ' . _DB_PREFIX_ . 'product SET ';
+        if (!is_null($priceNet)) {
+            $queryUpdatePriceAndQuantity .= 'quantity = \'' . $quantity;
+        }
+        if (!is_null($priceNet) && !is_null($quantity)) {
+            $queryUpdatePriceAndQuantity .= ', ';
+        }
+        if (!is_null($quantity)) {
+            $queryUpdatePriceAndQuantity .= 'price = \'' . $priceNet;
+        }
+        $queryUpdatePriceAndQuantity .= ' WHERE ' . $numer . '=\'' . $ref . '\' ';
+        $this->db->query($queryUpdatePriceAndQuantity);
     }
 
     private function _getIdProductAttribute($numer, $ref) {
