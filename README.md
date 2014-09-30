@@ -1,16 +1,12 @@
 PrestaShop_aktcsv
 ================================================
 
-Update price and stock (or just stock) quantity in PrestaShop 1.5.6 and 1.6.6 from CSV
+Update price and stock quantity (or just stock or price)  in PrestaShop 1.5.6.2 and 1.6.0.6 from CSV
 
 based on AktCSV from sokon.pl for PS 1.4 [PL]
 
 Download working [PL] aktcsv.zip from zip subfolder
-Install in PrestaShop 1.5.6
-You need add to /config/settings.inc.php:
-  define('_DB_SER_', 'localhost'); //Database server address
-  define('_DB_PORT_', '3306');     //Database server port
-
+Install in PrestaShop 1.5.6.2
 
   Multishop feature - untested.
 
@@ -21,23 +17,17 @@ You need add to /config/settings.inc.php:
   - zero prices and quantity before update
 
 [PL]
-Moduł aktualizacyjny stany magazynowe i ceny produktów (lub tylko stany) w PrestaShop 1.5.6 i 1.6.6
+Moduł aktualizacyjny stany magazynowe i ceny produktów (lub tylko stany) w PrestaShop 1.5.6.2 i 1.6.0.6
 
 Plik aktcsv_ps14.php - oryginał, dla wersji PS 1.4.
 
 Instalacja
 - Zapisz działający aktcsv.zip z podkatalogu zip na dysk
 - Panel administracyjny -> Dodaj moduł ->Zainstaluj
-- Edytuj plik /config/settings.inc.php:
-  define('_DB_SER_', 'localhost'); //wpisz poprawny adres serwera
-  define('_DB_PORT_', '3306');     //wpisz poprawny numer portu
+
 
 [PHP]
 In php.ini SET max_input_vars >1000
 
 More info [PL]:
 http://prestadesign.pl/moduly-f13/aktualizacja-cen-i-stanow-z-csv-t1165-110.html
-
-[Notice]
-My coding skills are far from perfect, I am aware that there are significant improvements
-that can be made to this, so if you have any, instead of criticising,  please suggest!

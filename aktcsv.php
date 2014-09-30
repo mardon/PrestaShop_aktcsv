@@ -3,30 +3,29 @@
 /*
   Module Name: AktCSV
   Module URI: https://github.com/Lechus
-  Description: Aktualizuje stany i ceny w Prestashop 1.5.6.2, 1.6.6
+  Description: Aktualizuje stany i ceny w Prestashop 1.5.6.2, 1.6.0.6
   Version: 3.2
   Author: Leszek Pietrzak
   Author URI: https://github.com/Lechus
  * 
- * 2014-04-11: PrestaShop 1.6.6, updating stocks only.
- * 2014-09-29: updating price only
+ * 2014-04-11: PrestaShop 1.6.0.6: updating stocks only.
+ * 2014-09-29: PrestaShop 1.6.0.6: updating price only.
  */
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class AktCsv extends Module {
-
-    private $_html = '';                                                        // used to store the html output for the back-office
-    private $db;                                                                // used to connect to DataBase
+class AktCsv extends Module
+{
+    private $_html = ''; // used to store the html output for the back-office
 
     const PRICE_ONLY = 3;
     const STOCK_ONLY = 1;
     const PRICE_STOCK = 2;
 
-
-    function __construct() {
+    function __construct()
+    {
         $this->name = 'aktcsv';
         $this->tab = 'Others';
         $this->version = '3.2';
@@ -41,8 +40,9 @@ class AktCsv extends Module {
         $this->confirmUninstall = $this->l('Chcesz mnie odinstalować?');
     }
 
-    public function install() {
-        if (version_compare(_PS_VERSION_, '1.5', '<')) {                        // let's check the PrestaShop version here
+    public function install()
+    {
+        if (version_compare(_PS_VERSION_, '1.5', '<')) { // let's check the PrestaShop version here
             $this->_errors[] = $this->l('Wymagana PrestaShop minimum 1.5.');
             return false;
         }
@@ -50,10 +50,10 @@ class AktCsv extends Module {
         if (parent::install() == false) {
             return false;
         }
-        // Ustawienia domyślne
+        // Default settings
         Configuration::updateValue($this->name . '_SEPARATOR', ';');
         Configuration::updateValue($this->name . '_NUMER', 'reference');
-        Configuration::updateValue($this->name . '_MARZA', '2.00');
+        Configuration::updateValue($this->name . '_MARZA', '1.20');
         Configuration::updateValue($this->name . '_MARZAPLUS', '0');
         Configuration::updateValue($this->name . '_LIMIT', '1');
         Configuration::updateValue($this->name . '_FILTR1', '');
@@ -61,13 +61,23 @@ class AktCsv extends Module {
         return true;
     }
 
-    public function uninstall() {
-        return parent::uninstall() && Configuration::deleteByName($this->name . '_SEPARATOR') && Configuration::deleteByName($this->name . '_NUMER') && Configuration::deleteByName($this->name . '_MARZA') && Configuration::deleteByName($this->name . '_MARZAPLUS') && Configuration::deleteByName($this->name . '_LIMIT') && Configuration::deleteByName($this->name . '_FILTR1') && Configuration::deleteByName($this->name . '_CSVFILE');
+    public function uninstall()
+    {
+        return parent::uninstall() && Configuration::deleteByName(
+            $this->name . '_SEPARATOR'
+        ) && Configuration::deleteByName($this->name . '_NUMER') && Configuration::deleteByName(
+            $this->name . '_MARZA'
+        ) && Configuration::deleteByName($this->name . '_MARZAPLUS') && Configuration::deleteByName(
+            $this->name . '_LIMIT'
+        ) && Configuration::deleteByName($this->name . '_FILTR1') && Configuration::deleteByName(
+            $this->name . '_CSVFILE'
+        );
     }
 
-    //Funkcja getContent() po kliknięciu w link "Konfiguruj"
-    public function getContent() {
-        //TODO: Sprawdzanie aktualizacji modułu
+    //Backoffice "Configure/Konfiguruj"
+    public function getContent()
+    {
+        //TODO: Module update
 
         $this->_html .= '<h2>' . $this->displayName . '</h2>';
 
@@ -85,20 +95,23 @@ class AktCsv extends Module {
         return $this->_html;
     }
 
-    public function displayForm() {
+    public function displayForm()
+    {
         $shop_name = '';
         $id_shop = 0;
 
         if (Shop::getContext() != Shop::CONTEXT_GROUP) {
             $context = Context::getContext();
-            $id_shop = (int) $context->shop->id;
+            $id_shop = (int)$context->shop->id;
             $shop_name = $context->shop->domain;
         }
 
         $this->_html .= '
 <fieldset>
 <legend>'
-            . $this->l('Wybierz plik CSV') . ' "*.csv" ' . $this->l('(nr kat; nazwa; cena; ilość)') . ' lub ' . $this->l('(index; ilość)')
+            . $this->l('Wybierz plik CSV') . ' "*.csv" ' . $this->l(
+                '(nr kat; nazwa; cena; ilość)'
+            ) . ' lub ' . $this->l('(index; ilość)')
             . '</legend>
 <form method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
@@ -111,7 +124,9 @@ class AktCsv extends Module {
 
 <form method="post"  action="' . $_SERVER['REQUEST_URI'] . '"> 
 ' . $this->l('Aktualizacja przeprowadzona będzie z pliku:') . ' <b>' . Configuration::get($this->name . '_CSVFILE') . '</b><br />
-<input type="text" name="separator" value="' . Configuration::get($this->name . '_SEPARATOR') . '" size="10"> ' . $this->l('Separator pól w pliku *.csv') . '</input>
+<input type="text" name="separator" value="' . Configuration::get(
+                $this->name . '_SEPARATOR'
+            ) . '" size="10"> ' . $this->l('Separator pól w pliku *.csv') . '</input>
     <br /><br />
 <select name="rodzaj_aktualizacji">
   <option value="2" selected="selected">Ceny i stany</option>
@@ -124,9 +139,13 @@ class AktCsv extends Module {
   <option value="supplier_reference"> Nr ref. dostawcy</option>
   <option value="reference" selected="selected"> Kod produktu</option>
   <option value="ean13"> Kod EAN13</option></select> ' . $this->l('Wybierz numeru 1 kol.') . '<br />
-<input type="text" name="marza" value="' . Configuration::get($this->name . '_MARZA') . '" size="11"> ' . $this->l('Jaką ustalamy marżę? (np. 1.20 - 20%)') . '</input><br />
+<input type="text" name="marza" value="' . Configuration::get($this->name . '_MARZA') . '" size="11"> ' . $this->l(
+                'Jaką ustalamy marżę? (np. 1.20 - 20%)'
+            ) . '</input><br />
 
-<input type="text" name="marza_plus" value="' . Configuration::get($this->name . '_MARZAPLUS') . '" size="11"> ' . $this->l('Stała kwota dodawana do ceny poza marżą') . '</input><br />
+<input type="text" name="marza_plus" value="' . Configuration::get(
+                $this->name . '_MARZAPLUS'
+            ) . '" size="11"> ' . $this->l('Stała kwota dodawana do ceny poza marżą') . '</input><br />
 <select name="brutto">
   <option value="1" selected="selected">Brutto</option>
   <option value="0" disabled> Netto</option>
@@ -134,15 +153,25 @@ class AktCsv extends Module {
   </select> ' . $this->l('Ceny produktów') . '<br /><br />
       
 <input type="checkbox" name="zerowanie" value="tak" disabled /> ' . $this->l('Zerować stany i ceny?') . '<br />
-<input type="checkbox" name="atrybuty" value="tak" checked="checked" /> ' . $this->l('Mam w bazie produkty z atrybutami') . '<br /><br />
+<input type="checkbox" name="atrybuty" value="tak" checked="checked" /> ' . $this->l(
+                'Mam w bazie produkty z atrybutami'
+            ) . '<br /><br />
 
 <p><b>' . $this->l('Opcje tworzenia pliku z brakującymi produktami') . '</b></p>
-<input type="checkbox" name="productNotInDB" value="tak" checked="checked" /> ' . $this->l('Sprawdzać produkty których nie ma w sklepie a są w pliku *csv?') . '<br />
-<input type="text" name="limit" value="' . Configuration::get($this->name . '_LIMIT') . '" size="11"> ' . $this->l('Jaki limit sztuk na magazynie?') . '</input><br />
-<input type="text" name="filtr1" value="' . Configuration::get($this->name . '_FILTR1') . '" size="11"> ' . $this->l('Filtr 1 Co wyszukujemy?') . '</input><br />
+<input type="checkbox" name="productNotInDB" value="tak" checked="checked" /> ' . $this->l(
+                'Sprawdzać produkty których nie ma w sklepie a są w pliku *csv?'
+            ) . '<br />
+<input type="text" name="limit" value="' . Configuration::get($this->name . '_LIMIT') . '" size="11"> ' . $this->l(
+                'Jaki limit sztuk na magazynie?'
+            ) . '</input><br />
+<input type="text" name="filtr1" value="' . Configuration::get($this->name . '_FILTR1') . '" size="11"> ' . $this->l(
+                'Filtr 1 Co wyszukujemy?'
+            ) . '</input><br />
 <p><b>' . $this->l('Id_shop, w którym robimy aktualizacje') . '</b></p>
 <input type="text" name="id_shop" value="' . $id_shop . '" size="11"> ' . $this->l($shop_name) . '</input><br />
-<p><input type="submit" name="submit_update" value="' . $this->l('Przeprowadź aktualizację') . '" class="button" /> ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '</P>
+<p><input type="submit" name="submit_update" value="' . $this->l(
+                'Przeprowadź aktualizację'
+            ) . '" class="button" /> ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '</P>
 </form> 
 
 </fieldset>
@@ -177,19 +206,23 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         return $this->_html;
     }
 
-    private function _uploadCSVFile() {
+    private function _uploadCSVFile()
+    {
         $uploadedFile = $_FILES['csv_filename'];
         if (isset($uploadedFile['name'])) {
             move_uploaded_file($uploadedFile['tmp_name'], '../modules/' . 'aktcsv/' . $uploadedFile['name']);
             Configuration::updateValue($this->name . '_CSVFILE', $uploadedFile['name']);
         }
-        $this->_html .= $this->displayConfirmation('Plik załadowany. <br/>Załadowałeś plik: '
+        $this->_html .= $this->displayConfirmation(
+            'Plik załadowany. <br/>Załadowałeś plik: '
             . '<b>"' . Configuration::get($this->name . '_CSVFILE') . '"</b>,'
-            . ' size: <b>' . $_FILES['csv_filename']['size'] . '</b> bytes.<br />');
+            . ' size: <b>' . $_FILES['csv_filename']['size'] . '</b> bytes.<br />'
+        );
         Logger::addLog('AktCSV module: Plik załadowany.');
     }
 
-    private function _updateDB() {
+    private function _updateDB()
+    {
         $codeStart = microtime(true);
 
         $separator = Tools::getValue("separator");
@@ -204,20 +237,17 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         Configuration::updateValue($this->name . '_LIMIT', $limit);
         $filtr1 = Tools::getValue("filtr1");
         Configuration::updateValue($this->name . '_FILTR1', $filtr1);
-        $updateMode = (int) Tools::getValue("rodzaj_aktualizacji");
+        $updateMode = (int)Tools::getValue("rodzaj_aktualizacji");
         Configuration::updateValue($this->name . '_RODZAJAKTUALIZACJI', rodzaj_aktualizacji);
 
 
         $productNotInDB = (Tools::getValue("productNotInDB") == "tak") ? 1 : 0;
         $zerowanie = (Tools::getValue("zerowanie") == "tak") ? 1 : 0;
         $attributes = (Tools::getValue("atrybuty") == "tak") ? 1 : 0;
-        $id_shop = (int) Tools::getValue("id_shop");
-
-//Poprawka by KSEIKO
-        $this->db = new mysqli(_DB_SERVER_, _DB_USER_, _DB_PASSWD_, _DB_NAME_, _DB_PORT_);
+        $id_shop = (int)Tools::getValue("id_shop");
 
         $handleCSVFile = fopen('../modules/aktcsv/' . Configuration::get($this->name . '_CSVFILE'), 'r');
-        $handleNotInDB = @fopen('../modules/aktcsv/missed_products.txt', 'w');   // do zapisu brakujących
+        $handleNotInDB = @fopen('../modules/aktcsv/missed_products.txt', 'w'); // do zapisu brakujących
 
         $wpisow = 0;
         $zmian_p = 0;
@@ -248,13 +278,17 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
                     $price *= $marza;
                     $price += $marza_plus;
                     break;
-                 default: exit('No implemented');
+                default:
+                    exit('No implemented');
                     break;
             }
 
 
             //Product without attribute
-            $idProduct = (int) Db::getInstance()->getValue('SELECT id_product FROM `' . _DB_PREFIX_ . 'product` WHERE ' . $numer . '=\'' . $reference . '\' ', 0);
+            $idProduct = (int)Db::getInstance()->getValue(
+                'SELECT id_product FROM `' . _DB_PREFIX_ . 'product` WHERE ' . $numer . '=\'' . $reference . '\' ',
+                0
+            );
 
             if ($idProduct > 0) {
                 $zmian_p++;
@@ -263,7 +297,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
                     StockAvailable::setQuantity($idProduct, 0, $quantity, $id_shop);
                     $this->_updateProductWithOutAttribute($numer, $reference, null, $quantity);
                 }
-                if ($updateMode == self::PRICE_ONLY ||$updateMode == self::PRICE_STOCK ) {
+                if ($updateMode == self::PRICE_ONLY || $updateMode == self::PRICE_STOCK) {
                     $taxRate = $this->_getTaxRate($idProduct, $id_shop);
                     $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
 
@@ -274,8 +308,11 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
 
             //Product with attribute
             if ($attributes == 1) {
-                $idProduct_atr = (int) Db::getInstance()->getValue('SELECT id_product FROM `' . _DB_PREFIX_ . 'product_attribute`'
-                    . ' WHERE ' . $numer . '=\'' . $reference . '\' ', 0);
+                $idProduct_atr = (int)Db::getInstance()->getValue(
+                    'SELECT id_product FROM `' . _DB_PREFIX_ . 'product_attribute`'
+                    . ' WHERE ' . $numer . '=\'' . $reference . '\' ',
+                    0
+                );
 
                 if ($idProduct_atr > 0) {
                     $zmian_a++;
@@ -285,7 +322,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
                         StockAvailable::setQuantity($idProduct, $idProductAttribute, $quantity, $id_shop);
                         $this->_updateProductWithAttribute($numer, $reference, null, $quantity);
                     }
-                    if ($updateMode == self::PRICE_ONLY ||$updateMode == self::PRICE_STOCK ) {
+                    if ($updateMode == self::PRICE_ONLY || $updateMode == self::PRICE_STOCK) {
                         $taxRate = $this->_getTaxRate($idProduct_atr, $id_shop);
                         $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
 
@@ -297,21 +334,29 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
 
             if ($productNotInDB == 1) {
                 //szukamy wg filtra_1
-                if ($idProduct == '' && $idProduct_atr == '') {    // nie znaleziono produktu ani bez Atr, ani z Atrybutem
+                if ($idProduct == '' && $idProduct_atr == '') { // nie znaleziono produktu ani bez Atr, ani z Atrybutem
                     if ((($filtr1 == "") && ($price != "0.00") && ($quantity >= $limit)) or
-                        (($filtr1 != "") && (strpos($quantity, $filtr1, 0) !== false) && ($price != "0.00") && ($quantity >= $limit))) {
+                        (($filtr1 != "") && (strpos(
+                                    $quantity,
+                                    $filtr1,
+                                    0
+                                ) !== false) && ($price != "0.00") && ($quantity >= $limit))
+                    ) {
                         $log .= 'Nieznaleziony produkt w bazie: indeks - <b>' . $reference . '</b> nazwa - <b>' . $quantity . '</b> cena - <b>' . $price . '</b>  ilość - <b>' . $quantity . '</b><br />';
                         fwrite($handleNotInDB, "\n\r");
-                        fwrite($handleNotInDB, 'Nieznaleziony produkt w bazie: Indeks - ' . $reference . '  nazwa - ' . $quantity . '   cena - ' . $price . '   ilość - ' . $quantity);
+                        fwrite(
+                            $handleNotInDB,
+                            'Nieznaleziony produkt w bazie: Indeks - ' . $reference . '  nazwa - ' . $quantity . '   cena - ' . $price . '   ilość - ' . $quantity
+                        );
                         $dopliku++;
 
                         @ob_flush();
                         @flush();
                     }
                 }
-            } else {    //jeśli nie sprawdzamy produktów ktorych nie ma w sklepie (aby ominąć limit czasu dla skryptu)
+            } else { //jeśli nie sprawdzamy produktów ktorych nie ma w sklepie (aby ominąć limit czasu dla skryptu)
                 $counter++;
-                if (($counter / 100) == (int) ($counter / 100)) {
+                if (($counter / 100) == (int)($counter / 100)) {
                     echo '~';
                 }
                 if ($counter > 8000) {
@@ -323,11 +368,10 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             }
 
             $idProduct = '';
-        }//while
+        }
+        //while
         fclose($handleCSVFile);
-        fclose($handleNotInDB); // zamyka brakujące
-
-        unset($this->db);  // zamyka połączenie z bazą
+        fclose($handleNotInDB);
 
         if ($filtr1 == "") {
             $filtr1 = "All missing products";
@@ -336,73 +380,84 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             $filtr1 = "Checking products disabled.";
         }
 
-        $codeEnd = microtime(true);   //koniec wykonywania skryptu
+        $codeEnd = microtime(true); //koniec wykonywania skryptu
         $elapsedTime = round($codeEnd - $codeStart, 2);
 
-        $this->_html .= $this->displayConfirmation('<b>Success</b><br/>Products quantity in file ' . Configuration::get($this->name . '_CSVFILE') . ':'
-            . ' <b>' . $wpisow . '</b><br/>Modified products: <b>' . $zmian_p . '</b><br />Modiefied attributes: <b>' . $zmian_a . '</b><br />'
+        $this->_html .= $this->displayConfirmation(
+            '<b>Success</b><br/>Products quantity in file ' . Configuration::get($this->name . '_CSVFILE') . ':'
+            . ' <b>' . $wpisow . '</b><br/>Modified products: <b>' . $zmian_p . '</b><br />Modified attributes: <b>' . $zmian_a . '</b><br />'
             . 'Set profit: <b>' . (($marza - 1) * 100) . '%.</b><br/>Execution time: <b>' . $elapsedTime . '</b> seconds<br/>'
-            . 'In file "missed_products.txt" I wrote: <b>' . $filtr1 . '</b> (number of records: <b>' . $dopliku . '</b>).<br/>');
+            . 'In file "missed_products.txt" I wrote: <b>' . $filtr1 . '</b> (number of records: <b>' . $dopliku . '</b>).<br/>'
+        );
     }
 
-    private function _clearCSVPrice($priceToClear) {
+    private function _clearCSVPrice($priceToClear)
+    {
         $price = str_replace(",", ".", $priceToClear);
         return str_replace(" ", "", $price);
     }
 
-    private function _clearCSVIlosc($amountToClear) {
+    private function _clearCSVIlosc($amountToClear)
+    {
         return str_replace(">", "", $amountToClear);
     }
 
-    private function _calculateAndFormatNetPrice($price, $taxRate) {
+    private function _calculateAndFormatNetPrice($price, $taxRate)
+    {
         $priceGross = number_format($price, 2, ".", "");
         $taxRate = ($taxRate + 100) / 100;
         return number_format(($priceGross / $taxRate), 2, ".", "");
     }
 
-    private function _getTaxRate($idProduct, $id_shop) {
-        $idTax = Db::getInstance()->getValue('SELECT id_tax_rules_group FROM ' . _DB_PREFIX_ . 'product_shop WHERE id_product = \'' . $idProduct . '\' AND id_shop=\'' . $id_shop . '\' ');
-        return Db::getInstance()->getValue('SELECT rate FROM ' . _DB_PREFIX_ . 'tax WHERE id_tax = \'' . $idTax . '\' ');
+    private function _getTaxRate($idProduct, $id_shop)
+    {
+        $idTax = Db::getInstance()->getValue(
+            'SELECT id_tax_rules_group FROM ' . _DB_PREFIX_ . 'product_shop WHERE id_product = \'' . $idProduct . '\' AND id_shop=\'' . $id_shop . '\' '
+        );
+        return Db::getInstance()->getValue(
+            'SELECT rate FROM ' . _DB_PREFIX_ . 'tax WHERE id_tax = \'' . $idTax . '\' '
+        );
     }
 
-    private function _updateProductPriceInShop($priceNet, $idProduct, $id_shop) {
-        $queryUpdatePrice = 'UPDATE ' . _DB_PREFIX_ . 'product_shop SET price = \'' . $priceNet . '\', date_upd=NOW() WHERE ';
-        $queryUpdatePrice .= ' id_product = \'' . $idProduct . '\' ';
-        $queryUpdatePrice .= ' AND id_shop = \'' . $id_shop . '\' ';
-        $this->db->query($queryUpdatePrice);
+    private function _updateProductPriceInShop($priceNet, $idProduct, $id_shop)
+    {
+        Db::getInstance()->update('product_shop', array(
+                'price' => (float)$priceNet,
+                'date_upd' => date("Y-m-d H:i:s"),
+            ), 'id_product = \'' . $idProduct . '\'  AND id_shop = \'' . $id_shop . '\' '
+        );
     }
 
-    private function _updateProductWithAttribute($numer, $ref, $priceNet=null, $quantity=null) {
-        $queryUpdatePriceAndQuantity = 'UPDATE ' . _DB_PREFIX_ . 'product_attribute SET ';
+    private function _updateProductWithAttribute($numer, $ref, $priceNet = null, $quantity = null)
+    {
+        $values = array();
         if (!is_null($priceNet)) {
-            $queryUpdatePriceAndQuantity .= 'quantity = \'' . $quantity;
-        }
-        if (!is_null($priceNet) && !is_null($quantity)) {
-            $queryUpdatePriceAndQuantity .= ', ';
+            $values['quantity'] = $quantity;
         }
         if (!is_null($quantity)) {
-            $queryUpdatePriceAndQuantity .= 'price = \'' . $priceNet;
+            $values['price'] = $priceNet;
         }
-        $queryUpdatePriceAndQuantity .= ' WHERE ' . $numer . '=\'' . $ref . '\' ';
-        $this->db->query($queryUpdatePriceAndQuantity);
+
+        Db::getInstance()->update('product_attribute', $values, $numer . ' = \'' . $ref . '\' ');
     }
 
-    private function _updateProductWithOutAttribute($numer, $ref, $priceNet=null, $quantity=null) {
-        $queryUpdatePriceAndQuantity = 'UPDATE ' . _DB_PREFIX_ . 'product SET ';
+    private function _updateProductWithOutAttribute($numer, $ref, $priceNet = null, $quantity = null)
+    {
+        $values = array();
         if (!is_null($priceNet)) {
-            $queryUpdatePriceAndQuantity .= 'quantity = \'' . $quantity;
-        }
-        if (!is_null($priceNet) && !is_null($quantity)) {
-            $queryUpdatePriceAndQuantity .= ', ';
+            $values['quantity'] = $quantity;
         }
         if (!is_null($quantity)) {
-            $queryUpdatePriceAndQuantity .= 'price = \'' . $priceNet;
+            $values['price'] = $priceNet;
         }
-        $queryUpdatePriceAndQuantity .= ' WHERE ' . $numer . '=\'' . $ref . '\' ';
-        $this->db->query($queryUpdatePriceAndQuantity);
+        Db::getInstance()->update('product', $values, $numer . ' = \'' . $ref . '\' ');
     }
 
-    private function _getIdProductAttribute($numer, $ref) {
-        return Db::getInstance()->getValue('SELECT id_product_attribute FROM ' . _DB_PREFIX_ . 'product_attribute WHERE ' . $numer . '=\'' . $ref . '\' ', 0);
+    private function _getIdProductAttribute($numer, $ref)
+    {
+        return Db::getInstance()->getValue(
+            'SELECT id_product_attribute FROM ' . _DB_PREFIX_ . 'product_attribute WHERE ' . $numer . '=\'' . $ref . '\' ',
+            0
+        );
     }
 }
