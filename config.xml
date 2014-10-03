@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
     <name>aktcsv</name>
-    <displayName><![CDATA[Aktualizacja z CSV]]></displayName>
-    <version><![CDATA[3.2]]></version>
-    <description><![CDATA[Aktualizuje ceny i stany z pliku .CSV]]></description>
+    <displayName><![CDATA[Update database from CSV]]></displayName>
+    <version><![CDATA[3.141003]]></version>
+    <description><![CDATA[Update database price and stock from .CSV]]></description>
     <author><![CDATA[LPP]]></author>
     <tab><![CDATA[Others]]></tab>
-    <confirmUninstall>Chcesz mnie odinstalować?</confirmUninstall>
+    <confirmUninstall>Are you sure to uninstall?</confirmUninstall>
     <is_configurable>1</is_configurable>
     <need_instance>1</need_instance>
     <limited_countries></limited_countries>

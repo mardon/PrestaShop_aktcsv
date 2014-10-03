@@ -28,7 +28,7 @@ class AktCsv extends Module
     {
         $this->name = 'aktcsv';
         $this->tab = 'Others';
-        $this->version = '3.2';
+        $this->version = '3.141003';
         $this->author = 'LPP';
 
         parent::__construct();
