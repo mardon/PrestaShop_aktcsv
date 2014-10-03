@@ -128,12 +128,17 @@ class AktCsv extends Module
                 $this->name . '_SEPARATOR'
             ) . '" size="10"> ' . $this->l('Separator pól w pliku *.csv') . '</input>
     <br /><br />
-<select name="rodzaj_aktualizacji">
+
+
+	<div class="form-group">
+<select  class="form-control"name="rodzaj_aktualizacji">
   <option value="2">Ceny i stany</option>
   <option value="1"> Tylko stany</option>
   <option value="3" selected="selected"> Tylko ceny</option>
   <option value="2" disabled> -- ---- -------------</option>
-</select> ' . $this->l('Rodzaj aktualizacji') . '<br /><br />
+</select> ' . $this->l('Rodzaj aktualizacji') . '
+</div>
+<br /><br />
 
 <select name="numer">
   <option value="supplier_reference"> Nr ref. dostawcy</option>
@@ -388,7 +393,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         $this->_html .= $this->displayConfirmation(
             '<b>Success</b><br/>Products quantity in file ' . Configuration::get($this->name . '_CSVFILE') . ':'
             . ' <b>' . $wpisow . '</b><br/>Found products: <b>' . $znalezionych_p . '</b><br />Found product with attribute: <b>' . $znalezionych_a . '</b><br />'
-            . 'Set profit: <b>' . (($marza - 1) * 100) . '%.</b><br/>Execution time: <b>' . $elapsedTime . '</b> seconds<br/>'
+            . 'Set profit: <b>' . $marza . '%.</b><br/>Execution time: <b>' . $elapsedTime . '</b> seconds<br/>'
             . 'In file "missed_products.txt" I wrote: <b>' . $filtr1 . '</b> (number of records: <b>' . $dopliku . '</b>).<br/>'
         );
     }
@@ -454,7 +459,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         }
         return Db::getInstance()->update('product', $values, $numer . ' = \'' . $ref . '\' ');
     }
-    
+
     private function calculateFinalPrice($price, $marza, $marza_plus)
     {
         $price += $price * ($marza / 100);
