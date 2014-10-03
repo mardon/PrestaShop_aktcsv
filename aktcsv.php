@@ -26,6 +26,7 @@ class AktCsv extends Module
 
     function __construct()
     {
+        //$this->bootstrap = true; //Ps 1.6
         $this->name = 'aktcsv';
         $this->tab = 'Others';
         $this->version = '3.141003';
@@ -113,73 +114,150 @@ class AktCsv extends Module
                 '(nr kat; nazwa; cena; ilość)'
             ) . ' '. $this->l('lub').' ' . $this->l('(index; ilość)')
             . '</legend>
-<form method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
+<form role="form" method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
 <input type="file" name="csv_filename" />
 <input type="submit" name="submit_csv" value="' . $this->l('Wyślij ten plik na serwer') . '" class="button" />
 </form></fieldset>
 <br />
 <br />
+<div class="bootstrap" style="max-width: 500px;">
 <fieldset><legend>' . $this->l('Główne funkcje modułu') . '</legend>
 
-<form method="post"  action="' . $_SERVER['REQUEST_URI'] . '"> 
-' . $this->l('Aktualizacja przeprowadzona będzie z pliku:') . ' <b>' . Configuration::get($this->name . '_CSVFILE') . '</b><br />
-<input type="text" name="separator" value="' . Configuration::get(
-                $this->name . '_SEPARATOR'
-            ) . '" size="10"> ' . $this->l('Separator pól w pliku *.csv') . '</input>
-    <br /><br />
-
-
-	<div class="form-group">
-<select  class="form-control"name="rodzaj_aktualizacji">
-  <option value="2">Ceny i stany</option>
-  <option value="1"> Tylko stany</option>
-  <option value="3" selected="selected"> Tylko ceny</option>
-  <option value="2" disabled> -- ---- -------------</option>
-</select> ' . $this->l('Rodzaj aktualizacji') . '
+<form role="form" method="post"  action="' . $_SERVER['REQUEST_URI'] . '"> 
+<h3>' . $this->l('Aktualizacja przeprowadzona będzie z pliku:') . ' ' . Configuration::get($this->name . '_CSVFILE') . '</h3>
+<br />
+<div class="form-group">
+<label class="control-label  required" for="separator">
+<span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l('Wazne! Jaki separator w CSV').'">
+' . $this->l('Separator pól w pliku *.csv') . '
+</span>
+</label>
+<input class="form-control" type="text" name="separator" value="' . Configuration::get($this->name . '_SEPARATOR') . '">
 </div>
-<br /><br />
+    <br />
+<div class="form-group">
+    <label class="control-label required" for="numer">
+    <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l('Wazne! Co aktualizujemy').'">
+    ' . $this->l('Rodzaj aktualizacji') . '
+    </span>
+    </label>
+    <select class="form-control" name="rodzaj_aktualizacji">
+      <option value="2">Ceny i stany</option>
+      <option value="1">Tylko stany</option>
+      <option value="3" selected="selected">Tylko ceny</option>
+    </select>
+</div>
+<br />
+<div class="form-group">
+    <label class="control-label required" for="numer">
+    <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l('Wazne! Wg jakiego klucza szukac produktu w bazie').'">
+    ' . $this->l('Wybierz numeru 1 kol.') . '
+    </span>
+    </label>
+    <select class="form-control" name="numer">
+      <option value="supplier_reference"> Nr ref. dostawcy</option>
+      <option value="reference" selected="selected"> Kod produktu</option>
+      <option value="ean13"> Kod EAN13</option>
+    </select>
 
-<select name="numer">
-  <option value="supplier_reference"> Nr ref. dostawcy</option>
-  <option value="reference" selected="selected"> Kod produktu</option>
-  <option value="ean13"> Kod EAN13</option></select> ' . $this->l('Wybierz numeru 1 kol.') . '<br />
-<input type="text" name="marza" value="' . Configuration::get($this->name . '_MARZA') . '" size="11">% ' . $this->l(
-                'Jaką ustalamy marżę w procentach? (np. 20)'
-            ) . '</input><br />
-
-<input type="text" name="marza_plus" value="' . Configuration::get(
+</div>
+<br/>
+<div class="form-group">
+<label class="control-label  required" for="marza">
+<span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Procent kwoty, jaki zostanie dodany do ceny">
+' . $this->l('Marża w procentach') . '
+</span>
+</label>
+    <input class="form-control" type="number" name="marza" value="' . Configuration::get($this->name . '_MARZA') . '">
+</div>
+            <br />
+<div class="form-group">
+<label class="control-label  required" for="marza_plus">
+<span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Kwota, ktora zostanie dodana po uwzglednieniu procentowej marzy">
+' . $this->l('Dodatkowa marża kwotowa') . '
+</span>
+</label>
+<input class="form-control" type="number" step="0.01" name="marza_plus" value="' . Configuration::get(
                 $this->name . '_MARZAPLUS'
-            ) . '" size="11"> ' . $this->l('Stała kwota dodawana do ceny poza marżą') . '</input><br />
-<select name="brutto">
-  <option value="1" selected="selected">Brutto</option>
-  <option value="0" disabled> Netto</option>
-  <option value="0" disabled> -- ---- -------------</option>
-  </select> ' . $this->l('Ceny produktów') . '<br /><br />
-      
-<input type="checkbox" name="zerowanie" value="tak" disabled /> ' . $this->l('Zerować stany i ceny?') . '<br />
-<input type="checkbox" name="atrybuty" value="tak" checked="checked" /> ' . $this->l(
-                'Mam w bazie produkty z atrybutami'
-            ) . '<br /><br />
+            ) . '">
+</div>
+            <br />
+<div class="form-group">
+    <label class="control-label  required" for="brutto">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Procent kwoty, jaki zostanie dodany do ceny">
+        ' . $this->l('Ceny produktów') . '
+        </span>
+    </label>
+    <select class="form-control" name="brutto">
+      <option value="1" selected="selected">Brutto</option>
+      <option value="0" disabled> Netto</option>
+  </select>
+  </div>
+  <br />
+      <div class="form-group">
+          <div class="checkbox">
+          <label>
+                <input class="" type="checkbox" name="zerowanie" value="tak" disabled /> ' . $this->l('Zerować stany i ceny?') . '
+                </label>
+        </div>
+      </div>
+    <br />
+    <div class="form-group">
+        <div class="checkbox">
+         <label>
+            <input class="" type="checkbox" name="atrybuty" value="tak" checked="checked" /> ' . $this->l('Mam w bazie produkty z atrybutami') . '
+         </label>
+        </div>
+    </div>
+        <br />
 
-<p><b>' . $this->l('Opcje tworzenia pliku z brakującymi produktami') . '</b></p>
+<h3>' . $this->l('Opcje tworzenia pliku z brakującymi produktami') . '</h3>
+<div class="form-group">
+<div class="checkbox">
+ <label>
 <input type="checkbox" name="productNotInDB" value="tak" checked="checked" /> ' . $this->l(
                 'Sprawdzać produkty których nie ma w sklepie a są w pliku *csv?'
-            ) . '<br />
-<input type="text" name="limit" value="' . Configuration::get($this->name . '_LIMIT') . '" size="11"> ' . $this->l(
-                'Jaki limit sztuk na magazynie?'
-            ) . '</input><br />
-<input type="text" name="filtr1" value="' . Configuration::get($this->name . '_FILTR1') . '" size="11"> ' . $this->l(
-                'Filtr 1 Co wyszukujemy?'
-            ) . '</input><br />
-<p><b>' . $this->l('Id_shop, w którym robimy aktualizacje') . '</b></p>
-<input type="text" name="id_shop" value="' . $id_shop . '" size="11"> ' . $this->l($shop_name) . '</input><br />
+            ) . '
+            </label>
+</div></div>
+<br />
+    <div class="form-group">
+        <label class="control-label required" for="limit">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Jaki limit sztuk na magazynie?">
+        ' . $this->l('Jaki limit sztuk na magazynie?') . '
+        </span>
+        </label>
+        <input type="text" name="limit" value="' . Configuration::get($this->name . '_LIMIT') . '">
+    </div>
+    <br />
+    <div class="form-group">
+        <label class="control-label required" for="filtr1">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Filtr do wyszukiwania ... produktow">
+        ' . $this->l('Filtr 1 Co wyszukujemy?') . '
+        </span>
+        </label>
+            <input type="text" name="filtr1" value="' . Configuration::get($this->name . '_FILTR1') . '">
+    </div>
+            <br />
+            <hr />
+<h3>' . $this->l('Id_shop, w którym chcesz dokonac aktualizacji') . '</h3>
+<div class="form-group">
+    <label class="control-label  required" for="id_shop">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="W ktorym sklepie zrobic aktualizacje?">
+        ' . $this->l($shop_name) . '
+        </span>
+    </label>
+    <input type="text" name="id_shop" value="' . $id_shop . '">
+</div>
+<br />
 <p><input type="submit" name="submit_update" value="' . $this->l(
                 'Przeprowadź aktualizację'
-            ) . '" class="button" /> ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '</P>
+            ) . '" class="buttonFinish btn btn-success" /> ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '</P>
 </form> 
 
 </fieldset>
+</div>
 <br />
 <br />
 <fieldset>
