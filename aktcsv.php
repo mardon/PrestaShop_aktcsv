@@ -53,7 +53,7 @@ class AktCsv extends Module
         // Default settings
         Configuration::updateValue($this->name . '_SEPARATOR', ';');
         Configuration::updateValue($this->name . '_NUMER', 'reference');
-        Configuration::updateValue($this->name . '_MARZA', '1.00');
+        Configuration::updateValue($this->name . '_MARZA', '0');
         Configuration::updateValue($this->name . '_MARZAPLUS', '0');
         Configuration::updateValue($this->name . '_LIMIT', '1');
         Configuration::updateValue($this->name . '_FILTR1', '');
@@ -111,7 +111,7 @@ class AktCsv extends Module
 <legend>'
             . $this->l('Wybierz plik CSV') . ' "*.csv" ' . $this->l(
                 '(nr kat; nazwa; cena; ilość)'
-            ) . ' lub ' . $this->l('(index; ilość)')
+            ) . ' '. $this->l('lub').' ' . $this->l('(index; ilość)')
             . '</legend>
 <form method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
@@ -139,8 +139,8 @@ class AktCsv extends Module
   <option value="supplier_reference"> Nr ref. dostawcy</option>
   <option value="reference" selected="selected"> Kod produktu</option>
   <option value="ean13"> Kod EAN13</option></select> ' . $this->l('Wybierz numeru 1 kol.') . '<br />
-<input type="text" name="marza" value="' . Configuration::get($this->name . '_MARZA') . '" size="11"> ' . $this->l(
-                'Jaką ustalamy marżę? (np. 1.20 - 20%)'
+<input type="text" name="marza" value="' . Configuration::get($this->name . '_MARZA') . '" size="11">% ' . $this->l(
+                'Jaką ustalamy marżę w procentach? (np. 20)'
             ) . '</input><br />
 
 <input type="text" name="marza_plus" value="' . Configuration::get(
@@ -193,7 +193,7 @@ class AktCsv extends Module
 </p><br />
 <p>
 Moduł ten aktualizuje ceny oraz stany magazynowe z pliku *.csv . Plik musi mieć nastepującą postać:<br /> 
-kod;nazwa produktu;cena;ilość lub index;ilosc <br />
+kod;nazwa produktu;cena;ilość lub index;ilosc lub index;cena<br />
 Produkty w bazie rozpoznawane są po numerze referencyjnym dostawcy, kodzie produktu lub kodzie EAN13. <br />
 Skrypt tworzy plik o nazwie "missed_products.txt" w którym zapisywane są produkty znajdujące się w pliku csv
 a ktorych nie ma w bazie sklepu. Dodatkowo produkty zapisywane do tego pliku możemy ograniczyć do produktów
@@ -267,17 +267,15 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             switch ($updateMode) {
                 case self::PRICE_ONLY:
                     $price = $this->_clearCSVPrice($data[1]);
-                    $price *= $marza;
-                    $price += $marza_plus;
+                    $price = $this->calculateFinalPrice($price, $marza, $marza_plus);
                     break;
                 case self::STOCK_ONLY:
                     $quantity = $this->_clearCSVIlosc($data[1]);
                     break;
                 case self::PRICE_STOCK:
-                    $price = $this->_clearCSVPrice($data[2]);
                     $quantity = $this->_clearCSVIlosc($data[3]);
-                    $price *= $marza;
-                    $price += $marza_plus;
+                    $price = $this->_clearCSVPrice($data[2]);
+                    $price = $this->calculateFinalPrice($price, $marza, $marza_plus);
                     break;
                 default:
                     exit('No implemented');
@@ -456,7 +454,19 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         }
         return Db::getInstance()->update('product', $values, $numer . ' = \'' . $ref . '\' ');
     }
+    
+    private function calculateFinalPrice($price, $marza, $marza_plus)
+    {
+        $price += $price * ($marza / 100);
+        $price += $marza_plus;
+        return $price;
+    }
+    //product_shop 	Product shop associations 	id_product, id_shop
 
+//Not used:
+//Product attribute shop associations
+//product_attribute_shop.`price`
+    /*To be deleted*/
     private function _getIdProductAttribute($numer, $ref)
     {
         return Db::getInstance()->getValue(
@@ -464,9 +474,6 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             0
         );
     }
-}
-//product_shop 	Product shop associations 	id_product, id_shop
 
-//Not used:
-//Product attribute shop associations
-//product_attribute_shop.`price`
+
+}
