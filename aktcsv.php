@@ -53,7 +53,7 @@ class AktCsv extends Module
         // Default settings
         Configuration::updateValue($this->name . '_SEPARATOR', ';');
         Configuration::updateValue($this->name . '_NUMER', 'reference');
-        Configuration::updateValue($this->name . '_MARZA', '1.20');
+        Configuration::updateValue($this->name . '_MARZA', '1.00');
         Configuration::updateValue($this->name . '_MARZAPLUS', '0');
         Configuration::updateValue($this->name . '_LIMIT', '1');
         Configuration::updateValue($this->name . '_FILTR1', '');
@@ -129,9 +129,9 @@ class AktCsv extends Module
             ) . '" size="10"> ' . $this->l('Separator pól w pliku *.csv') . '</input>
     <br /><br />
 <select name="rodzaj_aktualizacji">
-  <option value="2" selected="selected">Ceny i stany</option>
+  <option value="2">Ceny i stany</option>
   <option value="1"> Tylko stany</option>
-  <option value="3"> Tylko ceny</option>
+  <option value="3" selected="selected"> Tylko ceny</option>
   <option value="2" disabled> -- ---- -------------</option>
 </select> ' . $this->l('Rodzaj aktualizacji') . '<br /><br />
 
@@ -251,7 +251,8 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
 
         $wpisow = 0;
         $zmian_p = 0;
-        $zmian_a = 0;
+        $znalezionych_p = 0;
+        $znalezionych_a = 0;
         $dopliku = 0;
         $counter = 0;
         $log = '';
@@ -291,7 +292,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             );
 
             if ($idProduct > 0) {
-                $zmian_p++;
+                $znalezionych_p++;
 
                 if ($updateMode == self::STOCK_ONLY || $updateMode == self::PRICE_STOCK) {
                     StockAvailable::setQuantity($idProduct, 0, $quantity, $id_shop);
@@ -308,27 +309,30 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
 
             //Product with attribute
             if ($attributes == 1) {
-                $idProduct_atr = (int)Db::getInstance()->getValue(
-                    'SELECT id_product FROM `' . _DB_PREFIX_ . 'product_attribute`'
+                $productWithAttribute = Db::getInstance()->getRow(
+                    'SELECT id_product, id_product_attribute FROM `' . _DB_PREFIX_ . 'product_attribute`'
                     . ' WHERE ' . $numer . '=\'' . $reference . '\' ',
                     0
                 );
 
-                if ($idProduct_atr > 0) {
-                    $zmian_a++;
-                    $idProductAttribute = $this->_getIdProductAttribute($numer, $reference);
+                if (!empty($productWithAttribute) && $productWithAttribute['id_product'] > 0) {
+                    $znalezionych_a++;
+                    $idProductWithAttribute = $productWithAttribute['id_product'];
+                    $idProductAttribute = $productWithAttribute['id_product_attribute'];
 
                     if ($updateMode == self::STOCK_ONLY || $updateMode == self::PRICE_STOCK) {
                         StockAvailable::setQuantity($idProduct, $idProductAttribute, $quantity, $id_shop);
                         $this->_updateProductWithAttribute($numer, $reference, null, $quantity);
                     }
+
                     if ($updateMode == self::PRICE_ONLY || $updateMode == self::PRICE_STOCK) {
-                        $taxRate = $this->_getTaxRate($idProduct_atr, $id_shop);
+                        $taxRate = $this->_getTaxRate($idProductWithAttribute, $id_shop);
                         $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
 
-                        $this->_updateProductPriceInShop($priceNet, $idProduct_atr, $id_shop);
+                        $this->_updateProductPriceInShop($priceNet, $idProductWithAttribute, $id_shop);
                         $this->_updateProductWithAttribute($numer, $reference, $priceNet, null);
                     }
+
                 }
             }
 
@@ -368,8 +372,8 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             }
 
             $idProduct = '';
-        }
-        //while
+        }//while
+        
         fclose($handleCSVFile);
         fclose($handleNotInDB);
 
@@ -385,7 +389,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
 
         $this->_html .= $this->displayConfirmation(
             '<b>Success</b><br/>Products quantity in file ' . Configuration::get($this->name . '_CSVFILE') . ':'
-            . ' <b>' . $wpisow . '</b><br/>Modified products: <b>' . $zmian_p . '</b><br />Modified attributes: <b>' . $zmian_a . '</b><br />'
+            . ' <b>' . $wpisow . '</b><br/>Found products: <b>' . $znalezionych_p . '</b><br />Found product with attribute: <b>' . $znalezionych_a . '</b><br />'
             . 'Set profit: <b>' . (($marza - 1) * 100) . '%.</b><br/>Execution time: <b>' . $elapsedTime . '</b> seconds<br/>'
             . 'In file "missed_products.txt" I wrote: <b>' . $filtr1 . '</b> (number of records: <b>' . $dopliku . '</b>).<br/>'
         );
@@ -421,7 +425,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
 
     private function _updateProductPriceInShop($priceNet, $idProduct, $id_shop)
     {
-        Db::getInstance()->update('product_shop', array(
+        return Db::getInstance()->update('product_shop', array(
                 'price' => (float)$priceNet,
                 'date_upd' => date("Y-m-d H:i:s"),
             ), 'id_product = \'' . $idProduct . '\'  AND id_shop = \'' . $id_shop . '\' '
@@ -438,7 +442,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
             $values['price'] = $priceNet;
         }
 
-        Db::getInstance()->update('product_attribute', $values, $numer . ' = \'' . $ref . '\' ');
+        return Db::getInstance()->update('product_attribute', $values, $numer . ' = \'' . $ref . '\' ');
     }
 
     private function _updateProductWithOutAttribute($numer, $ref, $priceNet = null, $quantity = null)
@@ -450,7 +454,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         if (!is_null($quantity)) {
             $values['price'] = $priceNet;
         }
-        Db::getInstance()->update('product', $values, $numer . ' = \'' . $ref . '\' ');
+        return Db::getInstance()->update('product', $values, $numer . ' = \'' . $ref . '\' ');
     }
 
     private function _getIdProductAttribute($numer, $ref)
@@ -461,3 +465,8 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         );
     }
 }
+//product_shop 	Product shop associations 	id_product, id_shop
+
+//Not used:
+//Product attribute shop associations
+//product_attribute_shop.`price`
