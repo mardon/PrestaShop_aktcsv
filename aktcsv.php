@@ -196,7 +196,7 @@ class AktCsv extends Module
   </div>
   <br />
       <div class="form-group">
-          <div class="checkbox">
+          <div class="checkbox disabled">
           <label>
                 <input class="" type="checkbox" name="zerowanie" value="tak" disabled /> ' . $this->l('Zerować stany i ceny?') . '
                 </label>
@@ -251,9 +251,12 @@ class AktCsv extends Module
     <input type="text" name="id_shop" value="' . $id_shop . '">
 </div>
 <br />
-<p><input type="submit" name="submit_update" value="' . $this->l(
+<div class="form-group">
+<div style="border-top: 1px solid #fff;    margin-top: 20px;    padding-top: 20px;    width: 100%;">
+    <input type="submit" name="submit_update" value="' . $this->l(
                 'Przeprowadź aktualizację'
-            ) . '" class="buttonFinish btn btn-success" /> ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '</P>
+            ) . '" class="buttonFinish btn btn-success" /> ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '
+</div></div>
 </form> 
 
 </fieldset>
