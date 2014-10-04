@@ -263,11 +263,10 @@ class AktCsv extends Module
     <input type="text" name="id_shop" value="' . $id_shop . '">
 </div>
 <br />
-<div class="form-group">
-<div style="border-top: 1px solid #fff;    margin-top: 20px;    padding-top: 20px;    width: 100%;">
+<div class="panel-footer">
     <input type="submit" name="submit_update" value="' . $this->l('Przeprowadź aktualizację') . '" class="buttonFinish btn btn-success" />
      ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '
-</div></div>
+</div>
 </div>
 </form> 
 
