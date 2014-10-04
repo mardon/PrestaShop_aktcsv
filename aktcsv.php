@@ -4,7 +4,7 @@
   Module Name: AktCSV
   Module URI: https://github.com/Lechus
   Description: Aktualizuje stany i ceny w Prestashop 1.5.6.2, 1.6.0.6
-  Version: 3.141003
+  Version: 3.141004
   Author: Leszek Pietrzak
   Author URI: https://github.com/Lechus
  * 
@@ -26,7 +26,7 @@ class AktCsv extends Module
 
     function __construct()
     {
-        //$this->bootstrap = true; //Ps 1.6
+        $this->bootstrap = true; //Ps 1.6
         $this->name = 'aktcsv';
         $this->tab = 'Others';
         $this->version = '3.141003';
@@ -35,7 +35,7 @@ class AktCsv extends Module
         parent::__construct();
 
         $this->page = basename(__FILE__, '.php');
-        $this->displayName = $this->l('Aktualizacja z CSV');
+        $this->displayName = $this->l('Aktualizacja sklepu z pliku CSV');
         $this->description = $this->l('Aktualizuje ceny i stany z pliku .CSV');
 
         $this->confirmUninstall = $this->l('Chcesz mnie odinstalować?');
@@ -107,26 +107,38 @@ class AktCsv extends Module
             $shop_name = $context->shop->domain;
         }
 
-        $this->_html .= '
-<fieldset>
-<legend>'
-            . $this->l('Wybierz plik CSV') . ' "*.csv" ' . $this->l(
+        $this->_html .= '<div style="max-width: 500px;">
+<form class="form-horizontal" role="form" method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
+<div class="panel">
+    <div class="panel-heading">
+    <i class="icon-file"></i>
+    '. $this->l('Wgraj plik CSV') . '
+    </div>
+    <div class="alert alert-info">'. $this->l('Wybierz plik CSV') . ' "*.csv" ' . $this->l(
                 '(nr kat; nazwa; cena; ilość)'
             ) . ' '. $this->l('lub').' ' . $this->l('(index; ilość)')
-            . '</legend>
-<form role="form" method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
-<input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
-<input type="file" name="csv_filename" />
-<input type="submit" name="submit_csv" value="' . $this->l('Wyślij ten plik na serwer') . '" class="button" />
-</form></fieldset>
-<br />
-<br />
-<div class="bootstrap" style="max-width: 500px;">
-<fieldset><legend>' . $this->l('Główne funkcje modułu') . '</legend>
+            . '</div>
+    <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
+    <input type="file" name="csv_filename" />
+    <div class="panel-footer">
+        <button name="submit_csv" class="btn btn-default pull-right" type="submit"><i class="process-icon-save"></i> ' . $this->l('Wyślij ten plik na serwer') . '</button>
+    </div>
+</div>
+</form>
 
-<form role="form" method="post"  action="' . $_SERVER['REQUEST_URI'] . '"> 
-<h3>' . $this->l('Aktualizacja przeprowadzona będzie z pliku:') . ' ' . Configuration::get($this->name . '_CSVFILE') . '</h3>
 <br />
+<br />
+
+<form class="form-horizontal" role="form" method="post"  action="' . $_SERVER['REQUEST_URI'] . '">
+<div class="panel">
+    <div class="panel-heading">
+    <i class="icon-cogs"></i>
+    ' . $this->l('Główne funkcje modułu') . '
+    </div>
+
+    <div class="alert alert-info">' . $this->l('Aktualizacja przeprowadzona będzie z pliku:') . ' ' . Configuration::get($this->name . '_CSVFILE') . '
+    </div>
+
 <div class="form-group">
 <label class="control-label  required" for="separator">
 <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l('Wazne! Jaki separator w CSV').'">
@@ -240,7 +252,7 @@ class AktCsv extends Module
             <input type="text" name="filtr1" value="' . Configuration::get($this->name . '_FILTR1') . '">
     </div>
             <br />
-            <hr />
+            <br/>
 <h3>' . $this->l('Id_shop, w którym chcesz dokonac aktualizacji') . '</h3>
 <div class="form-group">
     <label class="control-label  required" for="id_shop">
@@ -253,22 +265,26 @@ class AktCsv extends Module
 <br />
 <div class="form-group">
 <div style="border-top: 1px solid #fff;    margin-top: 20px;    padding-top: 20px;    width: 100%;">
-    <input type="submit" name="submit_update" value="' . $this->l(
-                'Przeprowadź aktualizację'
-            ) . '" class="buttonFinish btn btn-success" /> ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '
+    <input type="submit" name="submit_update" value="' . $this->l('Przeprowadź aktualizację') . '" class="buttonFinish btn btn-success" />
+     ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '
 </div></div>
+</div>
 </form> 
 
-</fieldset>
+
+
+<br />
+<br />
+<div class="panel">
+<div class="panel-heading">
+' . $this->l('Log file') . '
 </div>
-<br />
-<br />
-<fieldset>
-<legend>' . $this->l('Dodatki') . '</legend>
 <p>' . $this->l('Ostatnio wygenerowany plik z brakującymi produktam:') . ' '
             . '<b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/missed_products.txt">missed_products.txt</a></b>
                  </p>
-</fieldset>
+</div>
+
+</div><!-- max-width-->
 <br />
 <br />
 <br />
