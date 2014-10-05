@@ -4,7 +4,7 @@
   Module Name: AktCSV
   Module URI: https://github.com/Lechus
   Description: Aktualizuje stany i ceny w Prestashop 1.5.6.2, 1.6.0.6
-  Version: 3.141004
+  Version: 3.141005
   Author: Leszek Pietrzak
   Author URI: https://github.com/Lechus
  * 
@@ -15,6 +15,10 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
+
+@ini_set('max_execution_time', 0);
+/** correct Mac error on eof */
+@ini_set('auto_detect_line_endings', '1');
 
 class AktCsv extends Module
 {
@@ -29,7 +33,7 @@ class AktCsv extends Module
         $this->bootstrap = true; //Ps 1.6
         $this->name = 'aktcsv';
         $this->tab = 'Others';
-        $this->version = '3.141003';
+        $this->version = '3.141005';
         $this->author = 'LPP';
 
         parent::__construct();
@@ -132,7 +136,7 @@ class AktCsv extends Module
 <form class="form-horizontal" role="form" method="post"  action="' . $_SERVER['REQUEST_URI'] . '">
 <div class="panel">
     <div class="panel-heading">
-    <i class="icon-cogs"></i>
+    <i class="icon-money"></i>
     ' . $this->l('Główne funkcje modułu') . '
     </div>
 
@@ -140,7 +144,7 @@ class AktCsv extends Module
     </div>
 
 <div class="form-group">
-<label class="control-label  required" for="separator">
+<label class="control-label required" for="separator">
 <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l('Wazne! Jaki separator w CSV').'">
 ' . $this->l('Separator pól w pliku *.csv') . '
 </span>
@@ -168,15 +172,15 @@ class AktCsv extends Module
     </span>
     </label>
     <select class="form-control" name="numer">
-      <option value="supplier_reference"> Nr ref. dostawcy</option>
-      <option value="reference" selected="selected"> Kod produktu</option>
-      <option value="ean13"> Kod EAN13</option>
+      <option value="supplier_reference">' . $this->l('Nr ref. dostawcy') . '</option>
+      <option value="reference" selected="selected">' . $this->l('Kod produktu') . '</option>
+      <option value="ean13">EAN13</option>
     </select>
 
 </div>
 <br/>
 <div class="form-group">
-<label class="control-label  required" for="marza">
+<label class="control-label required" for="marza">
 <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Procent kwoty, jaki zostanie dodany do ceny">
 ' . $this->l('Marża w procentach') . '
 </span>
@@ -185,7 +189,7 @@ class AktCsv extends Module
 </div>
             <br />
 <div class="form-group">
-<label class="control-label  required" for="marza_plus">
+<label class="control-label required" for="marza_plus">
 <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Kwota, ktora zostanie dodana po uwzglednieniu procentowej marzy">
 ' . $this->l('Dodatkowa marża kwotowa') . '
 </span>
@@ -196,7 +200,7 @@ class AktCsv extends Module
 </div>
             <br />
 <div class="form-group">
-    <label class="control-label  required" for="brutto">
+    <label class="control-label required" for="brutto">
         <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Procent kwoty, jaki zostanie dodany do ceny">
         ' . $this->l('Ceny produktów') . '
         </span>
@@ -255,10 +259,9 @@ class AktCsv extends Module
             <br/>
 <h3>' . $this->l('Id_shop, w którym chcesz dokonac aktualizacji') . '</h3>
 <div class="form-group">
-    <label class="control-label  required" for="id_shop">
-        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="W ktorym sklepie zrobic aktualizacje?">
-        ' . $this->l($shop_name) . '
-        </span>
+    <label class="control-label required" for="id_shop">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="W ktorym sklepie zrobic aktualizacje? Ignoruj jesli nie uzywasz Multistore.">
+        ' . $shop_name . '
     </label>
     <input type="text" name="id_shop" value="' . $id_shop . '">
 </div>
@@ -287,46 +290,76 @@ class AktCsv extends Module
 <br />
 <br />
 <br />
-<fieldset>
-<legend><img src="../img/admin/comment.gif"/>Informacje</legend>
-<p style="text-align:center;">Potrzebujesz pomocy, modyfikacji?<br />
+
+<div class="panel panel-info">
+  <div class="panel-heading"><i class="icon-lightbulb"></i>
+    ' . $this->l('Informacje') .'</div>
+  <div class="panel-body">
+    <p style="text-align:center;">Potrzebujesz pomocy, modyfikacji?<br />
  PS 1.5.6.2: <b><a href="mailto:leszek.pietrzak@gmail.com">Leszek.Pietrzak@gmail.com</a></b><br />
-</p><br />
-<p>
-Moduł ten aktualizuje ceny oraz stany magazynowe z pliku *.csv . Plik musi mieć nastepującą postać:<br /> 
-kod;nazwa produktu;cena;ilość lub index;ilosc lub index;cena<br />
-Produkty w bazie rozpoznawane są po numerze referencyjnym dostawcy, kodzie produktu lub kodzie EAN13. <br />
-Skrypt tworzy plik o nazwie "missed_products.txt" w którym zapisywane są produkty znajdujące się w pliku csv
-a ktorych nie ma w bazie sklepu. Dodatkowo produkty zapisywane do tego pliku możemy ograniczyć do produktów
-zawierających w nazwie określone slowa (wpisując je w pola "Filtr_1" ), oraz tylko do produktów o ilości
-nie mniejszej niż wpisana w pole "Limit sztuk na magazynie".<br /><br />
-Moduł można w prosty sposób dostosować do swoich potrzeb (kod modułu jest dokladnie opisany). 
-Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kontaktu.
-</p>
-</fieldset>';
+    </p>
+    <br />
+    <p>
+    Moduł ten aktualizuje ceny oraz stany magazynowe z pliku *.csv . Plik musi mieć nastepującą postać:<br />
+    kod;nazwa produktu;cena;ilość lub index;ilosc lub index;cena<br />
+    Produkty w bazie rozpoznawane są po numerze referencyjnym dostawcy, kodzie produktu lub kodzie EAN13. <br />
+    Skrypt tworzy plik o nazwie "missed_products.txt" w którym zapisywane są produkty znajdujące się w pliku csv
+    a ktorych nie ma w bazie sklepu. Dodatkowo produkty zapisywane do tego pliku możemy ograniczyć do produktów
+    zawierających w nazwie określone slowa (wpisując je w pola "Filtr_1"), oraz tylko do produktów o ilości
+    nie mniejszej niż wpisana w pole "Limit sztuk na magazynie".<br /><br />
+    Moduł można w prosty sposób dostosować do swoich potrzeb (kod modułu jest dokladnie opisany).
+    Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kontaktu.
+    </p>
+  </div>
+  </div>';
         return $this->_html;
     }
 
     private function _uploadCSVFile()
     {
+        $error = '';
+        if (isset($_FILES['csv_filename']) && !empty($_FILES['csv_filename']['error']))
+        {
+            switch ($_FILES['csv_filename']['error'])
+            {
+                case UPLOAD_ERR_INI_SIZE:
+                    $error = Tools::displayError('The uploaded file exceeds the upload_max_filesize directive in php.ini. If your server configuration allows it, you may add a directive in your .htaccess.');
+                    break;
+                case UPLOAD_ERR_FORM_SIZE:
+                    $error = Tools::displayError('The uploaded file exceeds the post_max_size directive in php.ini.
+						If your server configuration allows it, you may add a directive in your .htaccess.');
+                    break;
+                case UPLOAD_ERR_PARTIAL:
+                    $error = Tools::displayError('The uploaded file was only partially uploaded.');
+                    break;
+                    break;
+                case UPLOAD_ERR_NO_FILE:
+                    $error = Tools::displayError('No file was uploaded.');
+                    break;
+                    break;
+            }
+            $this->_html .= $error;
+        } else {
+
         $uploadedFile = $_FILES['csv_filename'];
         if (isset($uploadedFile['name'])) {
             move_uploaded_file($uploadedFile['tmp_name'], '../modules/' . 'aktcsv/' . $uploadedFile['name']);
             Configuration::updateValue($this->name . '_CSVFILE', $uploadedFile['name']);
         }
         $this->_html .= $this->displayConfirmation(
-            'Plik załadowany. <br/>Załadowałeś plik: '
+            'Wgrano plik: '
             . '<b>"' . Configuration::get($this->name . '_CSVFILE') . '"</b>,'
             . ' size: <b>' . $_FILES['csv_filename']['size'] . '</b> bytes.<br />'
         );
-        Logger::addLog('AktCSV module: Plik załadowany.');
+        Logger::addLog('AktCSV: CSV Uploaded: '.Configuration::get($this->name . '_CSVFILE'));
+        }
     }
 
     private function _updateDB()
     {
         $codeStart = microtime(true);
 
-        $separator = Tools::getValue("separator");
+        $separator = ($separator = Tools::substr(strval(trim(Tools::getValue('separator'))), 0, 1)) ? $separator :  ';';
         Configuration::updateValue($this->name . '_SEPARATOR', $separator);
         $numer = Tools::getValue("numer");
         Configuration::updateValue($this->name . '_NUMER', $numer);
@@ -348,7 +381,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         $id_shop = (int)Tools::getValue("id_shop");
 
         $handleCSVFile = fopen('../modules/aktcsv/' . Configuration::get($this->name . '_CSVFILE'), 'r');
-        $handleNotInDB = @fopen('../modules/aktcsv/missed_products.txt', 'w'); // do zapisu brakujących
+        $handleNotInDB = fopen('../modules/aktcsv/missed_products.txt', 'w'); // do zapisu brakujących
 
         $wpisow = 0;
         $zmian_p = 0;
@@ -371,10 +404,10 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
                     $price = $this->calculateFinalPrice($price, $marza, $marza_plus);
                     break;
                 case self::STOCK_ONLY:
-                    $quantity = $this->_clearCSVIlosc($data[1]);
+                    $quantity = $this->_clearCSVIQuantity($data[1]);
                     break;
                 case self::PRICE_STOCK:
-                    $quantity = $this->_clearCSVIlosc($data[3]);
+                    $quantity = $this->_clearCSVIQuantity($data[3]);
                     $price = $this->_clearCSVPrice($data[2]);
                     $price = $this->calculateFinalPrice($price, $marza, $marza_plus);
                     break;
@@ -385,10 +418,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
 
 
             //Product without attribute
-            $idProduct = (int)Db::getInstance()->getValue(
-                'SELECT id_product FROM `' . _DB_PREFIX_ . 'product` WHERE ' . $numer . '=\'' . $reference . '\' ',
-                0
-            );
+            $idProduct = $this->isProductInDB($numer, $reference);
 
             if ($idProduct > 0) {
                 $znalezionych_p++;
@@ -408,11 +438,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
 
             //Product with attribute
             if ($attributes == 1) {
-                $productWithAttribute = Db::getInstance()->getRow(
-                    'SELECT id_product, id_product_attribute FROM `' . _DB_PREFIX_ . 'product_attribute`'
-                    . ' WHERE ' . $numer . '=\'' . $reference . '\' ',
-                    0
-                );
+                $productWithAttribute = $this->isProductWithAttributeInDB($numer, $reference);
 
                 if (!empty($productWithAttribute) && $productWithAttribute['id_product'] > 0) {
                     $znalezionych_a++;
@@ -487,7 +513,8 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         $elapsedTime = round($codeEnd - $codeStart, 2);
 
         $this->_html .= $this->displayConfirmation(
-            '<b>Success</b><br/>Products quantity in file ' . Configuration::get($this->name . '_CSVFILE') . ':'
+            '<h4>Success</h4>
+             Products quantity in file ' . Configuration::get($this->name . '_CSVFILE') . ':'
             . ' <b>' . $wpisow . '</b><br/>Found products: <b>' . $znalezionych_p . '</b><br />Found product with attribute: <b>' . $znalezionych_a . '</b><br />'
             . 'Set profit: <b>' . $marza . '%.</b><br/>Execution time: <b>' . $elapsedTime . '</b> seconds<br/>'
             . 'In file "missed_products.txt" I wrote: <b>' . $filtr1 . '</b> (number of records: <b>' . $dopliku . '</b>).<br/>'
@@ -500,7 +527,7 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         return str_replace(" ", "", $price);
     }
 
-    private function _clearCSVIlosc($amountToClear)
+    private function _clearCSVIQuantity($amountToClear)
     {
         return str_replace(">", "", $amountToClear);
     }
@@ -512,20 +539,37 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
         return number_format(($priceGross / $taxRate), 2, ".", "");
     }
 
+    private function calculateFinalPrice($price, $marza, $marza_plus)
+    {
+        $price += $price * ($marza / 100);
+        $price += $marza_plus;
+        return $price;
+    }
+
     private function _getTaxRate($idProduct, $id_shop)
     {
-        $idTax = Db::getInstance()->getValue(
+        return DB::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
+                SELECT '._DB_PREFIX_.'_tax.rate
+                FROM '._DB_PREFIX_.'_tax, '._DB_PREFIX_.'_product_shop
+                WHERE '._DB_PREFIX_.'_product_shop.id_product = ' . $idProduct . '
+                AND '._DB_PREFIX_.'__product_shop.id_shop=' . $id_shop . '
+                AND '._DB_PREFIX_.'_tax.id_tax = ps_product_shop.id_tax_rules_group
+        ');
+
+        /*
+        $idTax = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
             'SELECT id_tax_rules_group FROM ' . _DB_PREFIX_ . 'product_shop WHERE id_product = \'' . $idProduct . '\' AND id_shop=\'' . $id_shop . '\' '
         );
-        return Db::getInstance()->getValue(
+        return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
             'SELECT rate FROM ' . _DB_PREFIX_ . 'tax WHERE id_tax = \'' . $idTax . '\' '
         );
+        */
     }
 
     private function _updateProductPriceInShop($priceNet, $idProduct, $id_shop)
     {
         return Db::getInstance()->update('product_shop', array(
-                'price' => (float)$priceNet,
+                'price' => $priceNet,
                 'date_upd' => date("Y-m-d H:i:s"),
             ), 'id_product = \'' . $idProduct . '\'  AND id_shop = \'' . $id_shop . '\' '
         );
@@ -534,10 +578,10 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
     private function _updateProductWithAttribute($numer, $ref, $priceNet = null, $quantity = null)
     {
         $values = array();
-        if (!is_null($priceNet)) {
+        if (!is_null($quantity)) {
             $values['quantity'] = $quantity;
         }
-        if (!is_null($quantity)) {
+        if (!is_null($priceNet)) {
             $values['price'] = $priceNet;
         }
 
@@ -547,34 +591,48 @@ Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kont
     private function _updateProductWithOutAttribute($numer, $ref, $priceNet = null, $quantity = null)
     {
         $values = array();
-        if (!is_null($priceNet)) {
+        if (!is_null($quantity)) {
             $values['quantity'] = $quantity;
         }
-        if (!is_null($quantity)) {
+        if (!is_null($priceNet)) {
             $values['price'] = $priceNet;
         }
         return Db::getInstance()->update('product', $values, $numer . ' = \'' . $ref . '\' ');
     }
 
-    private function calculateFinalPrice($price, $marza, $marza_plus)
+    /**
+     * @param $numer
+     * @param $reference
+     * @return array
+     */
+    private function isProductWithAttributeInDB($numer, $reference)
     {
-        $price += $price * ($marza / 100);
-        $price += $marza_plus;
-        return $price;
+        $productWithAttribute = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow(
+            'SELECT id_product, id_product_attribute FROM `' . _DB_PREFIX_ . 'product_attribute`'
+            . ' WHERE ' . $numer . '=\'' . $reference . '\' ',
+            0
+        );
+        return $productWithAttribute;
     }
-    //product_shop 	Product shop associations 	id_product, id_shop
+
+    /**
+     * @param $numer
+     * @param $reference
+     * @return int
+     */
+    private function isProductInDB($numer, $reference)
+    {
+        $idProduct = (int)Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+            'SELECT id_product FROM `' . _DB_PREFIX_ . 'product` WHERE ' . $numer . '=\'' . $reference . '\' ',
+            0
+        );
+        return $idProduct;
+    }
+
+//product_shop 	Product shop associations 	id_product, id_shop
 
 //Not used:
 //Product attribute shop associations
 //product_attribute_shop.`price`
-    /*To be deleted*/
-    private function _getIdProductAttribute($numer, $ref)
-    {
-        return Db::getInstance()->getValue(
-            'SELECT id_product_attribute FROM ' . _DB_PREFIX_ . 'product_attribute WHERE ' . $numer . '=\'' . $ref . '\' ',
-            0
-        );
-    }
-
 
 }
