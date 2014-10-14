@@ -4,12 +4,13 @@
   Module Name: AktCSV
   Module URI: https://github.com/Lechus
   Description: Aktualizuje stany i ceny w Prestashop 1.5.6.2, 1.6.0.6
-  Version: 3.141005
+  Version: 3.141015
   Author: Leszek Pietrzak
   Author URI: https://github.com/Lechus
  * 
  * 2014-04-11: PrestaShop 1.6.0.6: updating stocks only.
  * 2014-09-29: PrestaShop 1.6.0.6: updating price only.
+ * 2014-10: PrestaShop 1.6.0.9 - EAN*Amount*Price
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -24,16 +25,17 @@ class AktCsv extends Module
 {
     private $_html = ''; // used to store the html output for the back-office
 
-    const PRICE_ONLY = 3;
-    const STOCK_ONLY = 1;
-    const PRICE_STOCK = 2;
+    const EAN_STOCK_NET = 4;    //EAN13*Stock*PriceNet
+    const PRICE_ONLY    = 3;
+    const PRICE_STOCK   = 2;
+    const STOCK_ONLY    = 1;
 
     function __construct()
     {
         $this->bootstrap = true; //Ps 1.6
         $this->name = 'aktcsv';
         $this->tab = 'Others';
-        $this->version = '3.141005';
+        $this->version = '3.141015';
         $this->author = 'LPP';
 
         parent::__construct();
@@ -56,7 +58,7 @@ class AktCsv extends Module
             return false;
         }
         // Default settings
-        Configuration::updateValue($this->name . '_SEPARATOR', ';');
+        Configuration::updateValue($this->name . '_SEPARATOR', '*');
         Configuration::updateValue($this->name . '_NUMER', 'reference');
         Configuration::updateValue($this->name . '_MARZA', '0');
         Configuration::updateValue($this->name . '_MARZAPLUS', '0');
@@ -118,10 +120,12 @@ class AktCsv extends Module
     <i class="icon-file"></i>
     '. $this->l('Wgraj plik CSV') . '
     </div>
-    <div class="alert alert-info">'. $this->l('Wybierz plik CSV') . ' "*.csv" ' . $this->l(
-                '(nr kat; nazwa; cena; ilość)'
-            ) . ' '. $this->l('lub').' ' . $this->l('(index; ilość)')
-            . '</div>
+    <div class="alert alert-info">'. $this->l('Obslugiwane formaty pliku CSV') . ':
+        <p>' . $this->l('(index; nazwa; cena; ilość)') . '</p>
+        <p>' . $this->l('(index; ilość)').'</p>
+        <p>' . $this->l('(index; cena)').'</p>
+        <p>' . $this->l('(EAN*ilość*cena netto)') . '</p>
+    </div>
     <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
     <input type="file" name="csv_filename" />
     <div class="panel-footer">
@@ -161,7 +165,8 @@ class AktCsv extends Module
     <select class="form-control" name="rodzaj_aktualizacji">
       <option value="2">Ceny i stany</option>
       <option value="1">Tylko stany</option>
-      <option value="3" selected="selected">Tylko ceny</option>
+      <option value="3">Tylko ceny</option>
+      <option value="4" selected="selected">EAN*ilosc*cena netto</option>
     </select>
 </div>
 <br />
@@ -173,8 +178,8 @@ class AktCsv extends Module
     </label>
     <select class="form-control" name="numer">
       <option value="supplier_reference">' . $this->l('Nr ref. dostawcy') . '</option>
-      <option value="reference" selected="selected">' . $this->l('Kod produktu') . '</option>
-      <option value="ean13">EAN13</option>
+      <option value="reference">' . $this->l('Kod produktu') . '</option>
+      <option value="ean13" selected="selected">EAN13</option>
     </select>
 
 </div>
@@ -194,9 +199,7 @@ class AktCsv extends Module
 ' . $this->l('Dodatkowa marża kwotowa') . '
 </span>
 </label>
-<input class="form-control" type="number" step="0.01" name="marza_plus" value="' . Configuration::get(
-                $this->name . '_MARZAPLUS'
-            ) . '">
+<input class="form-control" type="number" step="0.01" name="marza_plus" value="' . Configuration::get($this->name . '_MARZAPLUS') . '">
 </div>
             <br />
 <div class="form-group">
@@ -206,15 +209,15 @@ class AktCsv extends Module
         </span>
     </label>
     <select class="form-control" name="brutto">
-      <option value="1" selected="selected">Brutto</option>
-      <option value="0" disabled> Netto</option>
+      <option value="1" selected="selected">' . $this->l('Brutto') . ' (Netto dla EAN13)</option>
+      <option value="0" disabled>' . $this->l('Netto') . '</option>
   </select>
   </div>
   <br />
       <div class="form-group">
           <div class="checkbox disabled">
           <label>
-                <input class="" type="checkbox" name="zerowanie" value="tak" disabled /> ' . $this->l('Zerować stany i ceny?') . '
+                <input class="" type="checkbox" name="zerowanie" value="tak" disabled />' . $this->l('Zerować stany i ceny?') . '
                 </label>
         </div>
       </div>
@@ -222,7 +225,7 @@ class AktCsv extends Module
     <div class="form-group">
         <div class="checkbox">
          <label>
-            <input class="" type="checkbox" name="atrybuty" value="tak" checked="checked" /> ' . $this->l('Mam w bazie produkty z atrybutami') . '
+            <input class="" type="checkbox" name="atrybuty" value="tak" checked="checked" />' . $this->l('Mam w bazie produkty z atrybutami') . '
          </label>
         </div>
     </div>
@@ -271,19 +274,18 @@ class AktCsv extends Module
      ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '
 </div>
 </div>
-</form> 
-
-
+</form>
 
 <br />
 <br />
+
 <div class="panel">
 <div class="panel-heading">
 ' . $this->l('Log file') . '
 </div>
-<p>' . $this->l('Ostatnio wygenerowany plik z brakującymi produktam:') . ' '
-            . '<b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/missed_products.txt">missed_products.txt</a></b>
-                 </p>
+    <p>' . $this->l('Ostatnio wygenerowany plik z brakującymi produktam:') . ' '
+        . '<b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/missed_products.txt">missed_products.txt</a></b>
+    </p>
 </div>
 
 </div><!-- max-width-->
