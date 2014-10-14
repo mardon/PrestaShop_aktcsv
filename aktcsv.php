@@ -427,13 +427,11 @@ class AktCsv extends Module
                     $price = $this->_clearCSVPrice($data[2]);
                     $price = $this->calculateFinalPrice($price, $marza, $marza_plus);
                     $gross = self::PRICE_NET;
-                    $updateMode = self::PRICE_STOCK;
                     break;
                 default:
                     exit('No implemented');
                     break;
             }
-
 
             //Product without attribute
             $idProduct = $this->isProductInDB($numer, $reference);
@@ -441,11 +439,11 @@ class AktCsv extends Module
             if ($idProduct > 0) {
                 $znalezionych_p++;
 
-                if ($updateMode == self::STOCK_ONLY || $updateMode == self::PRICE_STOCK) {
+                if ($updateMode == self::STOCK_ONLY || $updateMode == self::PRICE_STOCK || $updateMode == self::EAN_STOCK_NET) {
                     StockAvailable::setQuantity($idProduct, 0, $quantity, $id_shop);
                     $this->_updateProductWithOutAttribute($numer, $reference, null, $quantity);
                 }
-                if ($updateMode == self::PRICE_ONLY || $updateMode == self::PRICE_STOCK) {
+                if ($updateMode == self::PRICE_ONLY || $updateMode == self::PRICE_STOCK || $updateMode == self::EAN_STOCK_NET) {
                     if ($gross == self::PRICE_GROSS) {
                         $taxRate = $this->_getTaxRate($idProduct, $id_shop);
                         $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
@@ -459,7 +457,7 @@ class AktCsv extends Module
             }
 
             //Product with attribute
-            if ($attributes == 1) {
+            if ($attributes == 1 && !empty($reference)) {
                 $productWithAttribute = $this->isProductWithAttributeInDB($numer, $reference);
 
                 if (!empty($productWithAttribute) && $productWithAttribute['id_product'] > 0) {
@@ -467,12 +465,12 @@ class AktCsv extends Module
                     $idProductWithAttribute = $productWithAttribute['id_product'];
                     $idProductAttribute = $productWithAttribute['id_product_attribute'];
 
-                    if ($updateMode == self::STOCK_ONLY || $updateMode == self::PRICE_STOCK) {
+                    if ($updateMode == self::STOCK_ONLY || $updateMode == self::PRICE_STOCK || $updateMode == self::EAN_STOCK_NET) {
                         StockAvailable::setQuantity($idProduct, $idProductAttribute, $quantity, $id_shop);
                         $this->_updateProductWithAttribute($numer, $reference, null, $quantity);
                     }
 
-                    if ($updateMode == self::PRICE_ONLY || $updateMode == self::PRICE_STOCK) {
+                    if ($updateMode == self::PRICE_ONLY || $updateMode == self::PRICE_STOCK || $updateMode == self::EAN_STOCK_NET) {
                         if ($gross == self::PRICE_GROSS) {
                             $taxRate = $this->_getTaxRate($idProductWithAttribute, $id_shop);
                             $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
@@ -489,7 +487,7 @@ class AktCsv extends Module
 
             if ($productNotInDB == 1) {
                 //search using filtr_1
-                if ($idProduct == '' && $idProduct_atr == '') { // nie znaleziono produktu ani bez Atr, ani z Atrybutem
+                if ($idProduct == '' && $idProductWithAttribute == '') { // nie znaleziono produktu ani bez Atr, ani z Atrybutem
                     if ((($filtr1 == "") && ($price != "0.00") && ($quantity >= $limit)) or
                         (($filtr1 != "") && (strpos($quantity, $filtr1, 0) !== false)
                             && ($price != "0.00") && ($quantity >= $limit))
@@ -552,7 +550,7 @@ class AktCsv extends Module
 
     private function _clearCSVIQuantity($amountToClear)
     {
-        return str_replace(">", "", $amountToClear);
+         return str_replace(">", "", $amountToClear);
     }
 
     private function _calculateAndFormatNetPrice($price, $taxRate)
@@ -630,9 +628,12 @@ class AktCsv extends Module
      */
     private function isProductWithAttributeInDB($numer, $reference)
     {
+        $reference = trim($reference);
+        if (empty($reference)) return 0;
+        
         $productWithAttribute = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow(
             'SELECT id_product, id_product_attribute FROM `' . _DB_PREFIX_ . 'product_attribute`'
-            . ' WHERE ' . $numer . '=\'' . $reference . '\' ',
+            . ' WHERE `' . $numer . '`=\'' . $reference . '\'',
             0
         );
         return $productWithAttribute;
@@ -645,8 +646,11 @@ class AktCsv extends Module
      */
     private function isProductInDB($numer, $reference)
     {
+        $reference = trim($reference);
+        if (empty($reference)) return 0;
+
         $idProduct = (int)Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            'SELECT id_product FROM `' . _DB_PREFIX_ . 'product` WHERE ' . $numer . '=\'' . $reference . '\' ',
+            "SELECT id_product FROM `" . _DB_PREFIX_ . "product` WHERE `" . $numer . "`='" . $reference . "'",
             0
         );
         return $idProduct;
