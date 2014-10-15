@@ -169,10 +169,10 @@ class AktCsv extends Module
     </span>
     </label>
     <select class="form-control" name="rodzaj_aktualizacji">
-      <option value="2">Ceny i stany</option>
-      <option value="1">Tylko stany</option>
-      <option value="3">Tylko ceny</option>
-      <option value="4" selected="selected">EAN*ilosc*cena netto</option>
+      <option value="2"'.((Configuration::get($this->name . '_RODZAJAKTUALIZACJI') == "2") ? ' selected="selected"' : '') .'>Ceny i stany</option>
+      <option value="1"'.((Configuration::get($this->name . '_RODZAJAKTUALIZACJI') == "1") ? ' selected="selected"' : '') .'>Tylko stany</option>
+      <option value="3"'.((Configuration::get($this->name . '_RODZAJAKTUALIZACJI') == "3") ? ' selected="selected"' : '') .'>Tylko ceny</option>
+      <option value="4"'.((Configuration::get($this->name . '_RODZAJAKTUALIZACJI') == "4") ? ' selected="selected"' : '') .'>EAN*ilosc*cena netto</option>
     </select>
 </div>
 <br />
@@ -383,7 +383,7 @@ class AktCsv extends Module
         $filtr1 = Tools::getValue("filtr1");
         Configuration::updateValue($this->name . '_FILTR1', $filtr1);
         $updateMode = (int)Tools::getValue("rodzaj_aktualizacji");
-        Configuration::updateValue($this->name . '_RODZAJAKTUALIZACJI', rodzaj_aktualizacji);
+        Configuration::updateValue($this->name . '_RODZAJAKTUALIZACJI', $updateMode);
 
 
         $productNotInDB = (Tools::getValue("productNotInDB") == "tak") ? 1 : 0;
@@ -630,7 +630,7 @@ class AktCsv extends Module
     {
         $reference = trim($reference);
         if (empty($reference)) return 0;
-        
+
         $productWithAttribute = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow(
             'SELECT id_product, id_product_attribute FROM `' . _DB_PREFIX_ . 'product_attribute`'
             . ' WHERE `' . $numer . '`=\'' . $reference . '\'',
