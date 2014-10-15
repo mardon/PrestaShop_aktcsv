@@ -222,9 +222,9 @@ class AktCsv extends Module
   <br />
       <div class="form-group">
           <div class="checkbox disabled">
-          <label>
-                <input class="" type="checkbox" name="zerowanie" value="tak" disabled />' . $this->l('Zerować stany i ceny?') . '
-                </label>
+              <label>
+                    <input class="" type="checkbox" name="zerowanie" value="tak" />' . $this->l('Zerować stany i ceny?') . ' (Nie przetestowana)
+              </label>
         </div>
       </div>
     <br />
@@ -239,13 +239,13 @@ class AktCsv extends Module
 
 <h3>' . $this->l('Opcje tworzenia pliku z brakującymi produktami') . '</h3>
 <div class="form-group">
-<div class="checkbox">
- <label>
-<input type="checkbox" name="productNotInDB" value="tak" checked="checked" /> ' . $this->l(
-                'Sprawdzać produkty których nie ma w sklepie a są w pliku *csv?'
-            ) . '
-            </label>
-</div></div>
+    <div class="checkbox">
+         <label>
+            <input type="checkbox" name="productNotInDB" value="tak" checked="checked" /> ' . $this->l(
+                        'Sprawdzać produkty których nie ma w sklepie a są w pliku *csv?' ) . '
+         </label>
+    </div>
+</div>
 <br />
     <div class="form-group">
         <label class="control-label required" for="limit">
@@ -402,7 +402,13 @@ class AktCsv extends Module
         $counter = 0;
         $log = '';
 
-        //TODO: Implement updated option for reset prices and stocks
+        //TODO: TEST reset stocks
+        if ($zerowanie) {
+            $this->clearStocks();
+            $this->clearStockAvailable();
+            if ($attributes) $this->clearStocksWithAttributes();
+        }
+
 
         while (($data = fgetcsv($handleCSVFile, 0, $separator)) !== false) {
             $wpisow++;
@@ -654,6 +660,27 @@ class AktCsv extends Module
             0
         );
         return $idProduct;
+    }
+
+    private function clearStocks()
+    {
+        $values['quantity'] = 0;
+
+        return Db::getInstance()->update('product', $values, '', 0, false, false);
+    }
+
+    private function clearStocksWithAttributes()
+    {
+        $values['quantity'] = 0;
+
+        return Db::getInstance()->update('product_attribute', $values, '', 0, false, false);
+    }
+
+    private function clearStockAvailable()
+    {
+        $values['quantity'] = 0;
+
+        return Db::getInstance()->update('stock_available', $values, '', 0, false, false);
     }
 
 //product_shop 	Product shop associations 	id_product, id_shop
