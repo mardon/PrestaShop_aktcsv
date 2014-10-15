@@ -308,16 +308,16 @@ class AktCsv extends Module
  PS 1.5.6.2: <b><a href="mailto:leszek.pietrzak@gmail.com">Leszek.Pietrzak@gmail.com</a></b><br />
     </p>
     <br />
-    <p>
-    Moduł ten aktualizuje ceny oraz stany magazynowe z pliku *.csv . Plik musi mieć nastepującą postać:<br />
-    kod;nazwa produktu;cena;ilość lub index;ilosc lub index;cena<br />
-    Produkty w bazie rozpoznawane są po numerze referencyjnym dostawcy, kodzie produktu lub kodzie EAN13. <br />
-    Skrypt tworzy plik o nazwie "missed_products.txt" w którym zapisywane są produkty znajdujące się w pliku csv
+    <p>' . $this->l('Moduł ten aktualizuje ceny oraz stany magazynowe z pliku *.csv.') .'
+    <br />
+    ' . $this->l('Produkty w bazie rozpoznawane są po numerze referencyjnym dostawcy, kodzie produktu lub kodzie EAN13.') .'
+     <br />
+     ' . $this->l('Skrypt tworzy plik o nazwie `missed_products.txt` w którym zapisywane są produkty znajdujące się w pliku csv
     a ktorych nie ma w bazie sklepu. Dodatkowo produkty zapisywane do tego pliku możemy ograniczyć do produktów
     zawierających w nazwie określone slowa (wpisując je w pola "Filtr_1"), oraz tylko do produktów o ilości
-    nie mniejszej niż wpisana w pole "Limit sztuk na magazynie".<br /><br />
-    Moduł można w prosty sposób dostosować do swoich potrzeb (kod modułu jest dokladnie opisany).
-    Jesli jednak nie czujesz się na siłach aby zrobić to samemu zapraszam do kontaktu.
+    nie mniejszej niż wpisana w pole `Limit sztuk na magazynie`') .'.</p>
+    <p>
+    ' . $this->l('Moduł można szybko dostosować do indywidualnych potrzeb.') .'
     </p>
   </div>
   </div>';
