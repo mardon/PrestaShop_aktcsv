@@ -31,3 +31,10 @@ In php.ini SET max_input_vars >1000
 
 More info [PL]:
 http://prestadesign.pl/moduly-f13/aktualizacja-cen-i-stanow-z-csv-t1165-110.html
+
+
+[Warnings]
+- BACKUP YOUR DATABASE FIRST! Preferably using outside tools such as mysqldump
+Then examine the backup file - does it look like it holds all your data??
+- Turn on MAINTENANCE MODE. You don't want customers confusing things.
+- TEST IT THOROUGHLY. If you are not convinced everything is right, restore from your backup!
