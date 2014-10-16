@@ -2,7 +2,7 @@
 <module>
 	<name>aktcsv</name>
 	<displayName><![CDATA[Update Shop products from CSV file]]></displayName>
-	<version><![CDATA[3.141015]]></version>
+	<version><![CDATA[4.141016]]></version>
 	<description><![CDATA[Update price and stock from CSV file]]></description>
 	<author><![CDATA[LPP]]></author>
 	<tab><![CDATA[Others]]></tab>

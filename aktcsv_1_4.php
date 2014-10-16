@@ -44,18 +44,16 @@ $output .= '<h2>' . $this->displayName . '</h2>';
 if($_POST["plik"]) 
   { 
 
-  // wrzucamy plik do katalogu
-  $f = $_FILES['nazwa_pliku'];
-  if(isset($f['name']))
-    {
-//    move_uploaded_file($f['tmp_name'], '/modules/aktcsv/'.$f['name']);
-move_uploaded_file($f['tmp_name'], '../modules/'.$this->name.'/'.$f['name']);
+    // wrzucamy plik do katalogu
+    $f = $_FILES['nazwa_pliku'];
+    if(isset($f['name']))
+      {
+        move_uploaded_file($f['tmp_name'], '../modules/import/'.$this->name.'/'.$f['name']);
 
-
-    Configuration::updateValue('SOKON_SCV_PLIK', $f['name']);
+        Configuration::updateValue('SOKON_SCV_PLIK', $f['name']);
+      }
+    $output .= $this->displayConfirmation('Plik załadowany. <br/>Załadowałeś plik: <b>"' . Configuration::get('SOKON_SCV_PLIK') . '"</b> o rozmiarze: <b>' . $_FILES['nazwa_pliku']['size'] . '</b> bajtów.<br />');  
     }
-$output .= $this->displayConfirmation('Plik załadowany. <br/>Załadowałeś plik: <b>"' . Configuration::get('SOKON_SCV_PLIK') . '"</b> o rozmiarze: <b>' . $_FILES['nazwa_pliku']['size'] . '</b> bajtów.<br />');  
-  }
 
 
 // jeśli aktualizujemy cennik    
@@ -85,8 +83,8 @@ if ($_POST["atrybuty"]=="tak") $atrybuty=1;
   
 //Poprawka by KSEIKO
 @ $db=new mysqli(_DB_SER_,_DB_USER_,_DB_PASSWD_,_DB_NAME_,_DB_PORT_);
-     $uchwyt = fopen ('../modules/aktcsv/'.Configuration::get('SOKON_SCV_PLIK'),"r");
-     $writeFd = @fopen("../modules/aktcsv/brakujace.txt", 'w');   // do zapisu brakujących
+     $uchwyt = fopen ('../modules/aktcsv/import/'.Configuration::get('SOKON_SCV_PLIK'),"r");
+     $writeFd = @fopen("../modules/aktcsv/log/brakujace.txt", 'w');   // do zapisu brakujących
   $wpisow=0;
   $zmian_p=0;
   $zmian_a=0;
