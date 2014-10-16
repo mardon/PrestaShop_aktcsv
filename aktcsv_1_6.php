@@ -1,11 +1,4 @@
 <?php
-/*
-  Module Name: AktCSV
-  Module URI: https://github.com/Lechus/PrestaShop_aktcsv
-  Description: Update stock and price in Prestashop 1.4, 1.5.6.2, 1.6.0.6
-
-  Support PS 1.4 by original module by Sokon.pl
- */
 
 if (!defined('_PS_VERSION_')) {
     exit;
