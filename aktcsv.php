@@ -576,11 +576,11 @@ class AktCsv extends Module
     private function _getTaxRate($idProduct, $id_shop)
     {
         return DB::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
-                SELECT '._DB_PREFIX_.'_tax.rate
-                FROM '._DB_PREFIX_.'_tax, '._DB_PREFIX_.'_product_shop
-                WHERE '._DB_PREFIX_.'_product_shop.id_product = ' . $idProduct . '
-                AND '._DB_PREFIX_.'__product_shop.id_shop=' . $id_shop . '
-                AND '._DB_PREFIX_.'_tax.id_tax = ps_product_shop.id_tax_rules_group
+                SELECT '._DB_PREFIX_.'tax.rate
+                FROM '._DB_PREFIX_.'tax, '._DB_PREFIX_.'product_shop
+                WHERE '._DB_PREFIX_.'product_shop.id_product = ' . $idProduct . '
+                AND '._DB_PREFIX_.'product_shop.id_shop=' . $id_shop . '
+                AND '._DB_PREFIX_.'tax.id_tax = '._DB_PREFIX_.'product_shop.id_tax_rules_group
         ');
 
         /*
