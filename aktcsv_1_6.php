@@ -12,7 +12,7 @@ class AktCsv extends Module
 {
     private $_html = ''; // used to store the html output for the back-office
 
-    const EAN_STOCK_NET = 4;    //EAN13*Stock*PriceNet
+    const EAN_STOCK_PRICE = 4;    //EAN13*Stock*Price
     const PRICE_ONLY    = 3;
     const PRICE_STOCK   = 2;
     const STOCK_ONLY    = 1;
@@ -52,8 +52,8 @@ class AktCsv extends Module
         // Default settings
         Configuration::updateValue($this->name . '_SEPARATOR', '*');
         Configuration::updateValue($this->name . '_NUMER', 'ean13');
-        Configuration::updateValue($this->name . '_MARZA', '0');
-        Configuration::updateValue($this->name . '_MARZAPLUS', '0');
+        Configuration::updateValue($this->name . '_PROFIT', '0');
+        Configuration::updateValue($this->name . '_PROFITPLUS', '0');
         Configuration::updateValue($this->name . '_LIMIT', '1');
         Configuration::updateValue($this->name . '_FILTR1', '');
         Configuration::updateValue($this->name . '_CSVFILE', '');
@@ -66,8 +66,8 @@ class AktCsv extends Module
         return parent::uninstall() && Configuration::deleteByName(
             $this->name . '_SEPARATOR'
         ) && Configuration::deleteByName($this->name . '_NUMER') && Configuration::deleteByName(
-            $this->name . '_MARZA'
-        ) && Configuration::deleteByName($this->name . '_MARZAPLUS') && Configuration::deleteByName(
+            $this->name . '_PROFIT'
+        ) && Configuration::deleteByName($this->name . '_PROFITPLUS') && Configuration::deleteByName(
             $this->name . '_LIMIT'
         ) && Configuration::deleteByName($this->name . '_FILTR1') && Configuration::deleteByName(
             $this->name . '_CSVFILE'
@@ -119,7 +119,7 @@ class AktCsv extends Module
         <p>' . $this->l('(index; nazwa; cena; ilość)') . '</p>
         <p>' . $this->l('(index; ilość)').'</p>
         <p>' . $this->l('(index; cena)').'</p>
-        <p>' . $this->l('(EAN*ilość*cena netto)') . '</p>
+        <p>' . $this->l('(EAN*ilość*cena)') . '</p>
     </div>
     <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
     <input type="file" name="csv_filename" />
@@ -161,7 +161,7 @@ class AktCsv extends Module
       <option value="2"'.((Configuration::get($this->name . '_RODZAJAKTUALIZACJI') == "2") ? ' selected="selected"' : '') .'>Ceny i stany</option>
       <option value="1"'.((Configuration::get($this->name . '_RODZAJAKTUALIZACJI') == "1") ? ' selected="selected"' : '') .'>Tylko stany</option>
       <option value="3"'.((Configuration::get($this->name . '_RODZAJAKTUALIZACJI') == "3") ? ' selected="selected"' : '') .'>Tylko ceny</option>
-      <option value="4"'.((Configuration::get($this->name . '_RODZAJAKTUALIZACJI') == "4") ? ' selected="selected"' : '') .'>EAN*ilosc*cena netto</option>
+      <option value="4"'.((Configuration::get($this->name . '_RODZAJAKTUALIZACJI') == "4") ? ' selected="selected"' : '') .'>EAN*ilosc*cena</option>
     </select>
 </div>
 <br />
@@ -180,21 +180,21 @@ class AktCsv extends Module
 </div>
 <br/>
 <div class="form-group">
-<label class="control-label required" for="marza">
+<label class="control-label required" for="profit">
 <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Procent kwoty, jaki zostanie dodany do ceny">
 ' . $this->l('Marża w procentach') . '
 </span>
 </label>
-    <input class="form-control" type="number" name="marza" value="' . Configuration::get($this->name . '_MARZA') . '">
+    <input class="form-control" type="number" name="profit" value="' . Configuration::get($this->name . '_PROFIT') . '">
 </div>
             <br />
 <div class="form-group">
-<label class="control-label required" for="marza_plus">
+<label class="control-label required" for="profit_plus">
 <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Kwota, ktora zostanie dodana po uwzglednieniu procentowej marzy">
 ' . $this->l('Dodatkowa marża kwotowa') . '
 </span>
 </label>
-<input class="form-control" type="number" step="0.01" name="marza_plus" value="' . Configuration::get($this->name . '_MARZAPLUS') . '">
+<input class="form-control" type="number" step="0.01" name="profit_plus" value="' . Configuration::get($this->name . '_PROFITPLUS') . '">
 </div>
             <br />
 <div class="form-group">
@@ -204,15 +204,15 @@ class AktCsv extends Module
         </span>
     </label>
     <select class="form-control" name="gross">
-      <option value="1" selected="selected">' . $this->l('Brutto') . ' (Netto dla EAN13)</option>
-      <option value="0" disabled>' . $this->l('Netto') . '</option>
+      <option value="1" selected="selected">' . $this->l('Brutto') . '</option>
+      <option value="0">' . $this->l('Netto') . '</option>
   </select>
   </div>
   <br />
       <div class="form-group">
           <div class="checkbox disabled">
               <label>
-                    <input class="" type="checkbox" name="zerowanie" value="tak" />' . $this->l('Zerować stany i ceny?') . ' (Nie przetestowana)
+                    <input class="" type="checkbox" name="clearStocksMode" value="1" />' . $this->l('Zerować stany i ceny?') . ' (Nie przetestowana)
               </label>
         </div>
       </div>
@@ -220,7 +220,7 @@ class AktCsv extends Module
     <div class="form-group">
         <div class="checkbox">
          <label>
-            <input class="" type="checkbox" name="atrybuty" value="tak" checked="checked" />' . $this->l('Mam w bazie produkty z atrybutami') . '
+            <input class="" type="checkbox" name="atrybuty" value="1" checked="checked" />' . $this->l('Mam w bazie produkty z atrybutami') . '
          </label>
         </div>
     </div>
@@ -230,7 +230,7 @@ class AktCsv extends Module
 <div class="form-group">
     <div class="checkbox">
          <label>
-            <input type="checkbox" name="productNotInDB" value="tak" checked="checked" /> ' . $this->l(
+            <input type="checkbox" name="logProductsNotInDB" value="1" checked="checked" /> ' . $this->l(
                         'Sprawdzać produkty których nie ma w sklepie a są w pliku *csv?' ) . '
          </label>
     </div>
@@ -341,7 +341,7 @@ class AktCsv extends Module
 
         $uploadedFile = $_FILES['csv_filename'];
         if (isset($uploadedFile['name'])) {
-            move_uploaded_file($uploadedFile['tmp_name'], '../modules/' . 'aktcsv/' . $uploadedFile['name']);
+            move_uploaded_file($uploadedFile['tmp_name'], '../modules/aktcsv/import/' . $uploadedFile['name']);
             Configuration::updateValue($this->name . '_CSVFILE', $uploadedFile['name']);
         }
         $this->_html .= $this->displayConfirmation(
@@ -361,10 +361,10 @@ class AktCsv extends Module
         Configuration::updateValue($this->name . '_SEPARATOR', $separator);
         $numer = Tools::getValue("numer");
         Configuration::updateValue($this->name . '_NUMER', $numer);
-        $marza = Tools::getValue("marza");
-        Configuration::updateValue($this->name . '_MARZA', $marza);
-        $marza_plus = Tools::getValue("marza_plus");
-        Configuration::updateValue($this->name . '_MARZAPLUS', $marza_plus);
+        $profit = Tools::getValue("profit");
+        Configuration::updateValue($this->name . '_PROFIT', $profit);
+        $profit_plus = Tools::getValue("profit_plus");
+        Configuration::updateValue($this->name . '_PROFITPLUS', $profit_plus);
         $gross = Tools::getValue("gross");
         Configuration::updateValue($this->name . '_GROSS', $gross);
         $limit = Tools::getValue("limit");
@@ -375,24 +375,23 @@ class AktCsv extends Module
         Configuration::updateValue($this->name . '_RODZAJAKTUALIZACJI', $updateMode);
 
 
-        $productNotInDB = (Tools::getValue("productNotInDB") == "tak") ? 1 : 0;
-        $zerowanie = (Tools::getValue("zerowanie") == "tak") ? 1 : 0;
-        $attributes = (Tools::getValue("atrybuty") == "tak") ? 1 : 0;
+        $logProductsNotInDB = (Tools::getValue("logProductsNotInDB") == "1") ? 1 : 0;
+        $clearStocksMode = (Tools::getValue("clearStocksMode") == "1") ? 1 : 0;
+        $attributes = (Tools::getValue("atrybuty") == "1") ? 1 : 0;
         $id_shop = (int)Tools::getValue("id_shop");
 
-        $handleCSVFile = fopen('../modules/aktcsv/' . Configuration::get($this->name . '_CSVFILE'), 'r');
-        $handleNotInDB = fopen('../modules/aktcsv/missed_products.txt', 'w');
+        $handleCSVFile = fopen('../modules/aktcsv/import/' . Configuration::get($this->name . '_CSVFILE'), 'r');
+        $handleNotInDB = fopen('../modules/aktcsv/log/missed_products.txt', 'w');
 
-        $wpisow = 0;
-        $zmian_p = 0;
-        $znalezionych_p = 0;
+        $countProductsInCSV = 0;
+        $countFoundProducts = 0;
         $foundProductsWithAttribute = 0;
-        $dopliku = 0;
+        $countMissedProducts = 0;
         $counter = 0;
         $log = '';
 
         //TODO: TEST reset stocks
-        if ($zerowanie) {
+        if ($clearStocksMode) {
             $this->clearStocks();
             $this->clearStockAvailable();
             if ($attributes) $this->clearStocksWithAttributes();
@@ -400,14 +399,14 @@ class AktCsv extends Module
 
 
         while (($data = fgetcsv($handleCSVFile, 0, $separator)) !== false) {
-            $wpisow++;
+            $countProductsInCSV++;
 
             $reference = $data[0];
 
             switch ($updateMode) {
                 case self::PRICE_ONLY:
                     $price = $this->_clearCSVPrice($data[1]);
-                    $price = $this->calculateFinalPrice($price, $marza, $marza_plus);
+                    $price = $this->calculateFinalPrice($price, $profit, $profit_plus);
                     break;
                 case self::STOCK_ONLY:
                     $quantity = $this->_clearCSVIQuantity($data[1]);
@@ -415,30 +414,30 @@ class AktCsv extends Module
                 case self::PRICE_STOCK:
                     $quantity = $this->_clearCSVIQuantity($data[3]);
                     $price = $this->_clearCSVPrice($data[2]);
-                    $price = $this->calculateFinalPrice($price, $marza, $marza_plus);
+                    $price = $this->calculateFinalPrice($price, $profit, $profit_plus);
                     break;
-                case self::EAN_STOCK_NET:
+                case self::EAN_STOCK_PRICE:
                     $quantity = $this->_clearCSVIQuantity($data[1]);
                     $price = $this->_clearCSVPrice($data[2]);
-                    $price = $this->calculateFinalPrice($price, $marza, $marza_plus);
-                    $gross = self::PRICE_NET;
+                    $price = $this->calculateFinalPrice($price, $profit, $profit_plus);
                     break;
                 default:
                     exit('No implemented');
                     break;
             }
 
+
             //Product without attribute
             $idProduct = $this->isProductInDB($numer, $reference);
 
             if ($idProduct > 0) {
-                $znalezionych_p++;
+                $countFoundProducts++;
 
-                if ($updateMode == self::STOCK_ONLY || $updateMode == self::PRICE_STOCK || $updateMode == self::EAN_STOCK_NET) {
+                if ($updateMode != self::PRICE_ONLY) {
                     StockAvailable::setQuantity($idProduct, 0, $quantity, $id_shop);
                     $this->_updateProductWithOutAttribute($numer, $reference, null, $quantity);
                 }
-                if ($updateMode == self::PRICE_ONLY || $updateMode == self::PRICE_STOCK || $updateMode == self::EAN_STOCK_NET) {
+                if ($updateMode != self::STOCK_ONLY) {
                     if ($gross == self::PRICE_GROSS) {
                         $taxRate = $this->_getTaxRate($idProduct, $id_shop);
                         $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
@@ -460,12 +459,12 @@ class AktCsv extends Module
                     $idProductWithAttribute = $productWithAttribute['id_product'];
                     $idProductAttribute = $productWithAttribute['id_product_attribute'];
 
-                    if ($updateMode == self::STOCK_ONLY || $updateMode == self::PRICE_STOCK || $updateMode == self::EAN_STOCK_NET) {
+                    if ($updateMode != self::PRICE_ONLY) {
                         StockAvailable::setQuantity($idProduct, $idProductAttribute, $quantity, $id_shop);
                         $this->_updateProductWithAttribute($numer, $reference, null, $quantity);
                     }
 
-                    if ($updateMode == self::PRICE_ONLY || $updateMode == self::PRICE_STOCK || $updateMode == self::EAN_STOCK_NET) {
+                    if ($updateMode != self::STOCK_ONLY) {
                         if ($gross == self::PRICE_GROSS) {
                             $taxRate = $this->_getTaxRate($idProductWithAttribute, $id_shop);
                             $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
@@ -480,24 +479,13 @@ class AktCsv extends Module
                 }
             }
 
-            if ($productNotInDB == 1) {
-                //search using filtr_1
-                if ($idProduct == '' && $idProductWithAttribute == '') { // nie znaleziono produktu ani bez Atr, ani z Atrybutem
-                    if ((($filtr1 == "") && ($price != "0.00") && ($quantity >= $limit)) or
-                        (($filtr1 != "") && (strpos($quantity, $filtr1, 0) !== false)
-                            && ($price != "0.00") && ($quantity >= $limit))
-                    ) {
-                        $log .= 'Nieznaleziony produkt w bazie: indeks - <b>' . $reference . '</b> nazwa - <b>' . $quantity . '</b> cena - <b>' . $price . '</b>  ilość - <b>' . $quantity . '</b><br />';
-                        fwrite($handleNotInDB, "\n\r");
-                        fwrite(
-                            $handleNotInDB,
-                            'Nieznaleziony produkt w bazie: Indeks - ' . $reference . '  nazwa - ' . $quantity . '   cena - ' . $price . '   ilość - ' . $quantity
-                        );
-                        $dopliku++;
 
-                        @ob_flush();
-                        @flush();
-                    }
+            if ($logProductsNotInDB == 1) {
+
+                if (($attributes == 0 && $idProduct == 0 ) ||
+                   ($attributes == 1 && $idProduct == 0 && empty($productWithAttribute))) {
+                    $countMissedProducts++;
+                    $this->logMissedProduct($handleNotInDB, $reference, $price, $quantity);
                 }
             } else { //legacy code to be removed
                 $counter++;
@@ -521,7 +509,7 @@ class AktCsv extends Module
         if ($filtr1 == "") {
             $filtr1 = $this->l('Wszystkie brakujące pozycje');
         }
-        if ($productNotInDB != 1) {
+        if ($logProductsNotInDB != 1) {
             $filtr1 = $this->l('Zablokowaleś sprawdzanie produktów.');
         }
 
@@ -530,10 +518,12 @@ class AktCsv extends Module
 
         $this->_html .= $this->displayConfirmation(
             '<h4>Success</h4>
-             Products quantity in file ' . Configuration::get($this->name . '_CSVFILE') . ':'
-            . ' <b>' . $wpisow . '</b><br/>Found products: <b>' . $znalezionych_p . '</b><br />Found product with attribute: <b>' . $foundProductsWithAttribute . '</b><br />'
-            . 'Set profit: <b>' . $marza . '%.</b><br/>Execution time: <b>' . $elapsedTime . '</b> seconds<br/>'
-            . 'In file "missed_products.txt" I wrote: <b>' . $filtr1 . '</b> (number of records: <b>' . $dopliku . '</b>).<br/>'
+             ' . $this->l('Products in file') . ' ' . Configuration::get($this->name . '_CSVFILE') . ':'. ' <b>' . $countProductsInCSV . '</b>
+            <br/>' . $this->l('Products found in DB') . ': <b>' . $countFoundProducts . '</b><br />
+            ' . $this->l('Products with attribute found in DB') . ': <b>' . $foundProductsWithAttribute . '</b><br />'
+            . $this->l('Set profit') . ': <b>' . $profit . '%, profit(plus): '.$profit_plus.'</b>.<br/>
+            ' . $this->l('Execution time') . ': <b>' . $elapsedTime . '</b> seconds<br/>'
+            .  $this->l('In file "missed_products.txt": filtr') . '= <b>' . $filtr1 . '</b>, Nnumber of records: <b>' . $countMissedProducts . '</b>.<br/>'
         );
     }
 
@@ -555,10 +545,10 @@ class AktCsv extends Module
         return number_format(($priceGross / $taxRate), 2, ".", "");
     }
 
-    private function calculateFinalPrice($price, $marza, $marza_plus)
+    private function calculateFinalPrice($price, $profit, $profit_plus)
     {
-        $price += $price * ($marza / 100);
-        $price += $marza_plus;
+        $price += $price * ($profit / 100);
+        $price += $profit_plus;
         return $price;
     }
 
@@ -670,6 +660,24 @@ class AktCsv extends Module
         $values['quantity'] = 0;
 
         return Db::getInstance()->update('stock_available', $values, '', 0, false, false);
+    }
+
+    /**
+     * @param $handleNotInDB
+     * @param $reference
+     * @param $price
+     * @param $quantity
+     */
+    private function logMissedProduct($handleNotInDB, $reference, $price, $quantity)
+    {
+        fwrite($handleNotInDB, "\n\r");
+        fwrite(
+            $handleNotInDB,
+            'Nieznaleziony produkt w bazie: $numer = ' . $reference . '. Nowa cena - ' . $price . ' i ilość - ' . $quantity
+        );
+
+        @ob_flush();
+        @flush();
     }
 
 //product_shop 	Product shop associations 	id_product, id_shop
