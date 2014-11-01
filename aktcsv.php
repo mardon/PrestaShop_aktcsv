@@ -14,7 +14,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-if (version_compare(_PS_VERSION_, '1.5.0.0', '<'))
+if (version_compare(_PS_VERSION_, '1.5.6.0', '<'))
 {
 	require(dirname(__FILE__)."/aktcsv_1_4.php");
 }

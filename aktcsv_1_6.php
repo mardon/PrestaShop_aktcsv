@@ -79,7 +79,7 @@ class AktCsv extends Module
     //Backoffice "Configure/Konfiguruj"
     public function getContent()
     {
-        //TODO: Module update
+        //TODO: Check module update
 
         $this->_html .= '<h2>' . $this->displayName . '</h2>';
 
@@ -388,9 +388,10 @@ class AktCsv extends Module
         $foundProductsWithAttribute = 0;
         $countMissedProducts = 0;
         $counter = 0;
-        $log = '';
 
         //TODO: TEST reset stocks
+        //1.6. OK
+        //1.5.6.2 - need tests
         if ($clearStocksMode) {
             $this->clearStocks();
             $this->clearStockAvailable();
@@ -485,7 +486,7 @@ class AktCsv extends Module
                 if (($attributes == 0 && $idProduct == 0 ) ||
                    ($attributes == 1 && $idProduct == 0 && empty($productWithAttribute))) {
                     $countMissedProducts++;
-                    $this->logMissedProduct($handleNotInDB, $reference, $price, $quantity);
+                    $this->logMissedProduct($handleNotInDB, $numer, $reference, $price, $quantity);
                 }
             } else { //legacy code to be removed
                 $counter++;
@@ -561,15 +562,6 @@ class AktCsv extends Module
                 AND '._DB_PREFIX_.'product_shop.id_shop=' . $id_shop . '
                 AND '._DB_PREFIX_.'tax.id_tax = '._DB_PREFIX_.'product_shop.id_tax_rules_group
         ');
-
-        /*
-        $idTax = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            'SELECT id_tax_rules_group FROM ' . _DB_PREFIX_ . 'product_shop WHERE id_product = \'' . $idProduct . '\' AND id_shop=\'' . $id_shop . '\' '
-        );
-        return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            'SELECT rate FROM ' . _DB_PREFIX_ . 'tax WHERE id_tax = \'' . $idTax . '\' '
-        );
-        */
     }
 
     private function _updateProductPriceInShop($priceNet, $idProduct, $id_shop)
@@ -664,16 +656,17 @@ class AktCsv extends Module
 
     /**
      * @param $handleNotInDB
+     * @param $numer
      * @param $reference
      * @param $price
      * @param $quantity
      */
-    private function logMissedProduct($handleNotInDB, $reference, $price, $quantity)
+    private function logMissedProduct($handleNotInDB, $numer, $reference, $price, $quantity)
     {
         fwrite($handleNotInDB, "\n\r");
         fwrite(
             $handleNotInDB,
-            'Nieznaleziony produkt w bazie: $numer = ' . $reference . '. Nowa cena - ' . $price . ' i ilość - ' . $quantity
+            'Nieznaleziony produkt w bazie: ' . $numer .' = ' . $reference . '. Nowa cena - ' . $price . ' i ilość - ' . $quantity
         );
 
         @ob_flush();
