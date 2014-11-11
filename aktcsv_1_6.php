@@ -10,8 +10,7 @@ if (!defined('_PS_VERSION_')) {
 
 class AktCsv extends Module
 {
-    const EAN_STOCK_PRICE = 4; // used to store the html output for the back-office
-    const PRICE_ONLY = 3;    //EAN13*Stock*Price
+    const PRICE_ONLY = 3;
     const PRICE_STOCK = 2;
     const STOCK_ONLY = 1;
     const PRICE_NET = 0;
@@ -23,7 +22,7 @@ class AktCsv extends Module
     {
         $this->name = 'aktcsv';
         $this->tab = 'Others';
-        $this->version = '4.141016';
+        $this->version = '4.141111'; //Independence day version
         $this->author = 'LPP';
 
         $this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6');
