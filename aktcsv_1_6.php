@@ -254,7 +254,7 @@ class AktCsv extends Module
                     $idProductAttribute = $productWithAttribute['id_product_attribute'];
 
                     if ($updateMode != self::PRICE_ONLY) {
-                        StockAvailable::setQuantity($idProduct, $idProductAttribute, $quantity, $id_shop);
+                        StockAvailable::setQuantity($idProductWithAttribute, $idProductAttribute, $quantity, $id_shop);
                         $this->_updateProductWithAttribute($numer, $reference, null, $quantity);
                     }
 
@@ -437,14 +437,13 @@ class AktCsv extends Module
     {
         $reference = trim($reference);
         if (empty($reference)) {
-            return 0;
+            return array();
         }
 
-        $productWithAttribute = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow(
-            'SELECT id_product, id_product_attribute FROM `' . _DB_PREFIX_ . 'product_attribute`'
-            . ' WHERE `' . $numer . '`=\'' . $reference . '\'',
-            0
-        );
+        $sql = "SELECT id_product, id_product_attribute FROM `" . _DB_PREFIX_ . "product_attribute`
+                WHERE " . $numer . " = '" . $reference . "'";
+        $productWithAttribute = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow($sql, 0);
+
         return $productWithAttribute;
     }
 
@@ -529,27 +528,25 @@ class AktCsv extends Module
             $shop_name = $context->shop->domain;
         }
 
-        $this->_html .= '<div style="max-width: 500px;">
+        $this->_html .= '<p>Commercial use? Maybe some small donation?</p>
+<div style="max-width: 500px;">
 <form class="form-horizontal" role="form" method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
-<div class="panel">
-    <div class="panel-heading">
-    <i class="icon-file"></i>
-    ' . $this->l('Wgraj plik CSV') . '
+    <div class="panel">
+        <div class="panel-heading">
+        <i class="icon-file"></i>
+        ' . $this->l('Wgraj plik CSV') . '
+        </div>
+        <div class="alert alert-info">' . $this->l('Obslugiwane kolumny w pliku CSV') . ':
+            <p>' . $this->l('(index; nazwa; cena; ilość)') . '</p>
+            <p></p>
+        <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
+        <input type="file" name="csv_filename" />
+        <div class="panel-footer">
+            <button name="submit_csv" class="btn btn-default pull-right" type="submit">
+                <i class="process-icon-save"></i> ' . $this->l('Wyślij ten plik na serwer') . '
+            </button>
+        </div>
     </div>
-    <div class="alert alert-info">' . $this->l('Obslugiwane formaty pliku CSV') . ':
-        <p>' . $this->l('(index; nazwa; cena; ilość)') . '</p>
-        <p>' . $this->l('(index; ilość)') . '</p>
-        <p>' . $this->l('(index; cena)') . '</p>
-        <p>' . $this->l('(EAN*ilość*cena)') . '</p>
-    </div>
-    <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
-    <input type="file" name="csv_filename" />
-    <div class="panel-footer">
-        <button name="submit_csv" class="btn btn-default pull-right" type="submit"><i class="process-icon-save"></i> ' . $this->l(
-                'Wyślij ten plik na serwer'
-            ) . '</button>
-    </div>
-</div>
 </form>
 
 <br />
@@ -596,14 +593,24 @@ class AktCsv extends Module
       <option value="3"' . ((Configuration::get(
                     $this->name . '_RODZAJAKTUALIZACJI'
                 ) == "3") ? ' selected="selected"' : '') . '>Tylko ceny</option>
-      <option value="4"' . ((Configuration::get(
-                    $this->name . '_RODZAJAKTUALIZACJI'
-                ) == "4") ? ' selected="selected"' : '') . '>EAN*ilosc*cena</option>
     </select>
 </div>
 <br />
 <div class="form-group">
+    <label class="control-label required" for="type_value">
+    <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l(
+                'Please match each column of your source CSV file to one of the destination columns.'
+            ) . '">
+    ' . $this->l('Match columns') . '
+    </span>
+    </label>
     <table id="table" class="table table-bordered">
+    <tr>
+    <td>' . $this->l('Column') . ' 1</td>
+    <td>' . $this->l('Column') . ' 2</td>
+    <td>' . $this->l('Column') . ' 3</td>
+    <td>' . $this->l('Column') . ' 4</td>
+    </tr>
         <tr>
             <td>
                 <select class="form-control type_value"  id="type_value[0]" name="type_value[0]" >
@@ -684,13 +691,19 @@ class AktCsv extends Module
     <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l(
                 'Wazne! Wg jakiego klucza szukac produktu w bazie'
             ) . '">
-    ' . $this->l('Wybierz numeru 1 kol.') . '
+    ' . $this->l('Index is type of:') . '
     </span>
     </label>
     <select class="form-control" name="numer">
-      <option value="supplier_reference">' . $this->l('Nr ref. dostawcy') . '</option>
-      <option value="reference">' . $this->l('Kod produktu') . '</option>
-      <option value="ean13" selected="selected">EAN13</option>
+      <option value="supplier_reference"' . ((Configuration::get(
+                    $this->name . '_NUMER'
+                ) == "supplier_reference") ? ' selected="selected"' : '') . '>' . $this->l('Nr ref. dostawcy') . '</option>
+      <option value="reference"' . ((Configuration::get(
+                    $this->name . '_NUMER'
+                ) == "reference") ? ' selected="selected"' : '') . '>' . $this->l('Kod produktu') . '</option>
+      <option value="ean13"' . ((Configuration::get(
+                    $this->name . '_NUMER'
+                ) == "ean13") ? ' selected="selected"' : '') . '>EAN13</option>
     </select>
 
 </div>
@@ -802,7 +815,7 @@ class AktCsv extends Module
 ' . $this->l('Log file') . '
 </div>
     <p>' . $this->l('Ostatnio wygenerowany plik z brakującymi produktam:') . ' '
-            . '<b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/missed_products.txt">missed_products.txt</a></b>
+            . '<b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/log/missed_products.txt">missed_products.txt</a></b>
     </p>
     <p>' . $this->l('Jesli nie mozna otworzyc pliku, to musisz uzyc FTP.') . '</p>
 </div>
