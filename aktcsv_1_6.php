@@ -171,8 +171,6 @@ class AktCsv extends Module
         Configuration::updateValue($this->name . '_LIMIT', $limit);
         $filtr1 = Tools::getValue("filtr1");
         Configuration::updateValue($this->name . '_FILTR1', $filtr1);
-        $updateMode = (int)Tools::getValue("rodzaj_aktualizacji");
-        Configuration::updateValue($this->name . '_RODZAJAKTUALIZACJI', $updateMode);
 
         $this->receiveTab();
 
@@ -226,11 +224,11 @@ class AktCsv extends Module
             if ($idProduct > 0) {
                 $countFoundProducts++;
 
-                if ($updateMode != self::PRICE_ONLY) {
+                if (!empty($quantity)) {
                     StockAvailable::setQuantity($idProduct, 0, $quantity, $id_shop);
                     $this->_updateProductWithOutAttribute($numer, $reference, null, $quantity);
                 }
-                if ($updateMode != self::STOCK_ONLY) {
+                if (!empty($price)) {
                     if ($gross == self::PRICE_GROSS) {
                         $taxRate = $this->_getTaxRate($idProduct, $id_shop);
                         $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
@@ -252,12 +250,12 @@ class AktCsv extends Module
                     $idProductWithAttribute = $productWithAttribute['id_product'];
                     $idProductAttribute = $productWithAttribute['id_product_attribute'];
 
-                    if ($updateMode != self::PRICE_ONLY) {
+                    if (!empty($quantity)) {
                         StockAvailable::setQuantity($idProductWithAttribute, $idProductAttribute, $quantity, $id_shop);
                         $this->_updateProductWithAttribute($numer, $reference, null, $quantity);
                     }
 
-                    if ($updateMode != self::STOCK_ONLY) {
+                    if (!empty($price)) {
                         if ($gross == self::PRICE_GROSS) {
                             $taxRate = $this->_getTaxRate($idProductWithAttribute, $id_shop);
                             $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
@@ -482,13 +480,13 @@ class AktCsv extends Module
     {
         $line = 'Product not found in DB: ' . $numer . ' = ' . $info["index"];
         if (isset($info['price'])) {
-            $line .= ' New price - ' . $info['price'];
+            $line .= ', New price - ' . $info['price'];
         }
         if (isset($info['stock'])) {
-            $line .= ' New stock - ' . $info['stock'];
+            $line .= ', New stock - ' . $info['stock'];
         }
         if (isset($info['name'])) {
-            $line .= ' New name - ' . $info['name'];
+            $line .= ', Item Name - ' . $info['name'];
         }
         fwrite($handleNotInDB, $line .  "\n\r");
     }
@@ -573,27 +571,6 @@ class AktCsv extends Module
         </span>
         </label>
         <input class="form-control" type="text" name="separator" value="' . Configuration::get($this->name . '_SEPARATOR') . '">
-    </div>
-    <br />
-    <div class="form-group">
-        <label class="control-label required" for="numer">
-        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l(
-                    'Wazne! Co aktualizujemy'
-                ) . '">
-        ' . $this->l('Rodzaj aktualizacji') . '
-        </span>
-        </label>
-        <select class="form-control" name="rodzaj_aktualizacji">
-          <option value="2"' . ((Configuration::get(
-                        $this->name . '_RODZAJAKTUALIZACJI'
-                    ) == "2") ? ' selected="selected"' : '') . '>Ceny i stany</option>
-          <option value="1"' . ((Configuration::get(
-                        $this->name . '_RODZAJAKTUALIZACJI'
-                    ) == "1") ? ' selected="selected"' : '') . '>Tylko stany</option>
-          <option value="3"' . ((Configuration::get(
-                        $this->name . '_RODZAJAKTUALIZACJI'
-                    ) == "3") ? ' selected="selected"' : '') . '>Tylko ceny</option>
-        </select>
     </div>
     <br />
     <div class="form-group">
