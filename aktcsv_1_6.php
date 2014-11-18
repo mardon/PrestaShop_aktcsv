@@ -529,33 +529,35 @@ class AktCsv extends Module
 
         $this->_html .= '<p>Commercial use? Maybe some small donation?</p>
 <div style="max-width: 500px;">
-<form class="form-horizontal" role="form" method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
-    <div class="panel">
-        <div class="panel-heading">
-        <i class="icon-file"></i>
-        ' . $this->l('Wgraj plik CSV') . '
+    <form class="form-horizontal" role="form" method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
+        <div class="panel">
+            <div class="panel-heading">
+                <i class="icon-file"></i>
+            ' . $this->l('Wgraj plik CSV') . '
+            </div>
+            <div class="panel-body">
+                <div class="alert alert-info">' . $this->l('Obslugiwane kolumny w pliku CSV') . ':
+                    <p>' . $this->l('(index; nazwa; cena; ilość)') . '</p>
+                    <p></p>
+                </div>
+                <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
+                <input type="file" name="csv_filename" />
+            </div>
+            <div class="panel-footer">
+                <button name="submit_csv" class="btn btn-default pull-right" type="submit">
+                    <i class="process-icon-save"></i> ' . $this->l('Wyślij ten plik na serwer') . '
+                </button>
+            </div>
         </div>
-        <div class="alert alert-info">' . $this->l('Obslugiwane kolumny w pliku CSV') . ':
-            <p>' . $this->l('(index; nazwa; cena; ilość)') . '</p>
-            <p></p>
-        <input type="hidden" name="MAX_FILE_SIZE" value="20000000" />
-        <input type="file" name="csv_filename" />
-        <div class="panel-footer">
-            <button name="submit_csv" class="btn btn-default pull-right" type="submit">
-                <i class="process-icon-save"></i> ' . $this->l('Wyślij ten plik na serwer') . '
-            </button>
-        </div>
-    </div>
-</form>
+    </form>
 
-<br />
-<br />
+    <br />
+    <br />
 
 <form class="form-horizontal" role="form" method="post"  action="' . $_SERVER['REQUEST_URI'] . '">
 <div class="panel">
     <div class="panel-heading">
-    <i class="icon-money"></i>
-    ' . $this->l('Główne funkcje modułu') . '
+        <i class="icon-money"></i>' . $this->l('Główne funkcje modułu') . '
     </div>
 
     <div class="alert alert-info">' . $this->l(
@@ -563,180 +565,179 @@ class AktCsv extends Module
             ) . ' ' . Configuration::get($this->name . '_CSVFILE') . '
     </div>
 
-<div class="form-group">
-<label class="control-label required" for="separator">
-<span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l(
-                'Wazne! Jaki separator w CSV'
-            ) . '">
-' . $this->l('Separator pól w pliku *.csv') . '
-</span>
-</label>
-<input class="form-control" type="text" name="separator" value="' . Configuration::get($this->name . '_SEPARATOR') . '">
-</div>
-    <br />
-<div class="form-group">
-    <label class="control-label required" for="numer">
-    <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l(
-                'Wazne! Co aktualizujemy'
-            ) . '">
-    ' . $this->l('Rodzaj aktualizacji') . '
-    </span>
-    </label>
-    <select class="form-control" name="rodzaj_aktualizacji">
-      <option value="2"' . ((Configuration::get(
-                    $this->name . '_RODZAJAKTUALIZACJI'
-                ) == "2") ? ' selected="selected"' : '') . '>Ceny i stany</option>
-      <option value="1"' . ((Configuration::get(
-                    $this->name . '_RODZAJAKTUALIZACJI'
-                ) == "1") ? ' selected="selected"' : '') . '>Tylko stany</option>
-      <option value="3"' . ((Configuration::get(
-                    $this->name . '_RODZAJAKTUALIZACJI'
-                ) == "3") ? ' selected="selected"' : '') . '>Tylko ceny</option>
-    </select>
-</div>
-<br />
-<div class="form-group">
-    <label class="control-label required" for="type_value">
-    <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l(
-                'Please match each column of your source CSV file to one of the destination columns.'
-            ) . '">
-    ' . $this->l('Match columns') . '
-    </span>
-    </label>
-    <table id="table" class="table table-bordered">
-    <tr>
-    <td>' . $this->l('Column') . ' 1</td>
-    <td>' . $this->l('Column') . ' 2</td>
-    <td>' . $this->l('Column') . ' 3</td>
-    <td>' . $this->l('Column') . ' 4</td>
-    </tr>
-        <tr>
-            <td>
-                <select class="form-control type_value"  id="type_value[0]" name="type_value[0]" >
-                  <option value="index"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE0'
-                ) == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
-                  <option value="price"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE0'
-                ) == "price") ? ' selected="selected"' : '') . '>' . $this->l('Price') . '</option>
-                  <option value="stock"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE0'
-                ) == "stock") ? ' selected="selected"' : '') . '>' . $this->l('Stock') . '</option>
-                  <option value="name"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE0'
-                ) == "name") ? ' selected="selected"' : '') . '>' . $this->l('Name') . '</option>
-                </select>
-            </td>
-            <td>
-                <select class="form-control type_value"  id="type_value[1]" name="type_value[1]" >
-                  <option value="index"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE1'
-                ) == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
-                  <option value="price"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE1'
-                ) == "price") ? ' selected="selected"' : '') . '>' . $this->l('Price') . '</option>
-                  <option value="stock"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE1'
-                ) == "stock") ? ' selected="selected"' : '') . '>' . $this->l('Stock') . '</option>
-                  <option value="name"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE1'
-                ) == "name") ? ' selected="selected"' : '') . '>' . $this->l('Name') . '</option>
-                </select>
-            </td>
-            <td>
-                <select class="form-control type_value"  id="type_value[2]" name="type_value[2]" >
-                <option value="no"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE2'
-                ) == "no") ? ' selected="selected"' : '') . '>' . $this->l('Ignore this column') . '</option>
-                  <option value="index"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE2'
-                ) == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
-                  <option value="price"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE2'
-                ) == "price") ? ' selected="selected"' : '') . '>' . $this->l('Price') . '</option>
-                  <option value="stock"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE2'
-                ) == "stock") ? ' selected="selected"' : '') . '>' . $this->l('Stock') . '</option>
-                  <option value="name"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE2'
-                ) == "name") ? ' selected="selected"' : '') . '>' . $this->l('Name') . '</option>
-                </select>
-            </td>
-            <td>
-                <select class="form-control type_value"  id="type_value[3]" name="type_value[3]" >
-                  <option value="no"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE3'
-                ) == "no") ? ' selected="selected"' : '') . '>' . $this->l('Ignore this column') . '</option>
-                  <option value="index"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE3'
-                ) == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
-                  <option value="price"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE3'
-                ) == "price") ? ' selected="selected"' : '') . '>' . $this->l('Price') . '</option>
-                  <option value="stock"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE3'
-                ) == "stock") ? ' selected="selected"' : '') . '>' . $this->l('Stock') . '</option>
-                  <option value="name"' . ((Configuration::get(
-                    $this->name . '_TYPEVALUE3'
-                ) == "name") ? ' selected="selected"' : '') . '>' . $this->l('Name') . '</option>
-                </select>
-            </td>
-        </tr>
-    </table>
-</div>
-<br/>
-<div class="form-group">
-    <label class="control-label required" for="numer">
-    <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l(
-                'Wazne! Wg jakiego klucza szukac produktu w bazie'
-            ) . '">
-    ' . $this->l('Index is type of:') . '
-    </span>
-    </label>
-    <select class="form-control" name="numer">
-      <option value="supplier_reference"' . ((Configuration::get(
-                    $this->name . '_NUMER'
-                ) == "supplier_reference") ? ' selected="selected"' : '') . '>' . $this->l('Nr ref. dostawcy') . '</option>
-      <option value="reference"' . ((Configuration::get(
-                    $this->name . '_NUMER'
-                ) == "reference") ? ' selected="selected"' : '') . '>' . $this->l('Kod produktu') . '</option>
-      <option value="ean13"' . ((Configuration::get(
-                    $this->name . '_NUMER'
-                ) == "ean13") ? ' selected="selected"' : '') . '>EAN13</option>
-    </select>
-
-</div>
-<br/>
-<div class="form-group">
-<label class="control-label required" for="profit">
-<span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Procent kwoty, jaki zostanie dodany do ceny">
-' . $this->l('Marża w procentach') . '
-</span>
-</label>
-    <input class="form-control" type="number" name="profit" value="' . Configuration::get($this->name . '_PROFIT') . '">
-</div>
-            <br />
-<div class="form-group">
-<label class="control-label required" for="profit_plus">
-<span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Kwota, ktora zostanie dodana po uwzglednieniu procentowej marzy">
-' . $this->l('Dodatkowa marża kwotowa') . '
-</span>
-</label>
-<input class="form-control" type="number" step="0.01" name="profit_plus" value="' . Configuration::get(
-                $this->name . '_PROFITPLUS'
-            ) . '">
-</div>
-            <br />
-<div class="form-group">
-    <label class="control-label required" for="gross">
-        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Brutto (wyliczy netto) lub netto.">
-        ' . $this->l('Ceny produktów') . '
+    <div class="form-group">
+        <label class="control-label required" for="separator">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="'
+            . $this->l('Wazne! Jaki separator w CSV') . '">
+        ' . $this->l('Separator pól w pliku *.csv') . '
         </span>
-    </label>
-    <select class="form-control" name="gross">
-      <option value="1" selected="selected">' . $this->l('Brutto') . '</option>
-      <option value="0">' . $this->l('Netto') . '</option>
-  </select>
+        </label>
+        <input class="form-control" type="text" name="separator" value="' . Configuration::get($this->name . '_SEPARATOR') . '">
+    </div>
+    <br />
+    <div class="form-group">
+        <label class="control-label required" for="numer">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l(
+                    'Wazne! Co aktualizujemy'
+                ) . '">
+        ' . $this->l('Rodzaj aktualizacji') . '
+        </span>
+        </label>
+        <select class="form-control" name="rodzaj_aktualizacji">
+          <option value="2"' . ((Configuration::get(
+                        $this->name . '_RODZAJAKTUALIZACJI'
+                    ) == "2") ? ' selected="selected"' : '') . '>Ceny i stany</option>
+          <option value="1"' . ((Configuration::get(
+                        $this->name . '_RODZAJAKTUALIZACJI'
+                    ) == "1") ? ' selected="selected"' : '') . '>Tylko stany</option>
+          <option value="3"' . ((Configuration::get(
+                        $this->name . '_RODZAJAKTUALIZACJI'
+                    ) == "3") ? ' selected="selected"' : '') . '>Tylko ceny</option>
+        </select>
+    </div>
+    <br />
+    <div class="form-group">
+        <label class="control-label required" for="type_value">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="'
+            . $this->l('Please match each column of your source CSV file to one of the destination columns.') . '">
+        ' . $this->l('Match columns') . '
+        </span>
+        </label>
+        <table id="table" class="table table-bordered">
+        <tr>
+        <td>' . $this->l('Column') . ' 1</td>
+        <td>' . $this->l('Column') . ' 2</td>
+        <td>' . $this->l('Column') . ' 3</td>
+        <td>' . $this->l('Column') . ' 4</td>
+        </tr>
+            <tr>
+                <td>
+                    <select class="form-control type_value"  id="type_value[0]" name="type_value[0]" >
+                      <option value="index"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE0'
+                    ) == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
+                      <option value="price"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE0'
+                    ) == "price") ? ' selected="selected"' : '') . '>' . $this->l('Price') . '</option>
+                      <option value="stock"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE0'
+                    ) == "stock") ? ' selected="selected"' : '') . '>' . $this->l('Stock') . '</option>
+                      <option value="name"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE0'
+                    ) == "name") ? ' selected="selected"' : '') . '>' . $this->l('Name') . '</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-control type_value"  id="type_value[1]" name="type_value[1]" >
+                      <option value="index"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE1'
+                    ) == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
+                      <option value="price"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE1'
+                    ) == "price") ? ' selected="selected"' : '') . '>' . $this->l('Price') . '</option>
+                      <option value="stock"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE1'
+                    ) == "stock") ? ' selected="selected"' : '') . '>' . $this->l('Stock') . '</option>
+                      <option value="name"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE1'
+                    ) == "name") ? ' selected="selected"' : '') . '>' . $this->l('Name') . '</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-control type_value"  id="type_value[2]" name="type_value[2]" >
+                    <option value="no"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE2'
+                    ) == "no") ? ' selected="selected"' : '') . '>' . $this->l('Ignore this column') . '</option>
+                      <option value="index"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE2'
+                    ) == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
+                      <option value="price"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE2'
+                    ) == "price") ? ' selected="selected"' : '') . '>' . $this->l('Price') . '</option>
+                      <option value="stock"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE2'
+                    ) == "stock") ? ' selected="selected"' : '') . '>' . $this->l('Stock') . '</option>
+                      <option value="name"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE2'
+                    ) == "name") ? ' selected="selected"' : '') . '>' . $this->l('Name') . '</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-control type_value"  id="type_value[3]" name="type_value[3]" >
+                      <option value="no"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE3'
+                    ) == "no") ? ' selected="selected"' : '') . '>' . $this->l('Ignore this column') . '</option>
+                      <option value="index"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE3'
+                    ) == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
+                      <option value="price"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE3'
+                    ) == "price") ? ' selected="selected"' : '') . '>' . $this->l('Price') . '</option>
+                      <option value="stock"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE3'
+                    ) == "stock") ? ' selected="selected"' : '') . '>' . $this->l('Stock') . '</option>
+                      <option value="name"' . ((Configuration::get(
+                        $this->name . '_TYPEVALUE3'
+                    ) == "name") ? ' selected="selected"' : '') . '>' . $this->l('Name') . '</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <br/>
+    <div class="form-group">
+        <label class="control-label required" for="numer">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="' . $this->l(
+                    'Wazne! Wg jakiego klucza szukac produktu w bazie'
+                ) . '">
+        ' . $this->l('Index is type of:') . '
+        </span>
+        </label>
+        <select class="form-control" name="numer">
+          <option value="supplier_reference"' . ((Configuration::get(
+                        $this->name . '_NUMER'
+                    ) == "supplier_reference") ? ' selected="selected"' : '') . '>' . $this->l('Nr ref. dostawcy') . '</option>
+          <option value="reference"' . ((Configuration::get(
+                        $this->name . '_NUMER'
+                    ) == "reference") ? ' selected="selected"' : '') . '>' . $this->l('Kod produktu') . '</option>
+          <option value="ean13"' . ((Configuration::get(
+                        $this->name . '_NUMER'
+                    ) == "ean13") ? ' selected="selected"' : '') . '>EAN13</option>
+        </select>
+    </div>
+    <br/>
+    <div class="form-group">
+        <label class="control-label required" for="profit">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip"
+         data-original-title="Procent kwoty, jaki zostanie dodany do ceny">
+        ' . $this->l('Marża w procentach') . '
+        </span>
+        </label>
+        <input class="form-control" type="number" name="profit" value="' . Configuration::get($this->name . '_PROFIT') . '">
+    </div>
+    <br />
+    <div class="form-group">
+        <label class="control-label required" for="profit_plus">
+        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip"
+         data-original-title="Kwota, ktora zostanie dodana po uwzglednieniu procentowej marzy">
+        ' . $this->l('Dodatkowa marża kwotowa') . '
+        </span>
+        </label>
+        <input class="form-control" type="number" step="0.01" name="profit_plus" value="' . Configuration::get(
+                        $this->name . '_PROFITPLUS'
+                    ) . '">
+    </div>
+            <br />
+    <div class="form-group">
+        <label class="control-label required" for="gross">
+            <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Brutto (wyliczy netto) lub netto.">
+            ' . $this->l('Ceny produktów') . '
+            </span>
+        </label>
+        <select class="form-control" name="gross">
+          <option value="1" selected="selected">' . $this->l('Brutto') . '</option>
+          <option value="0">' . $this->l('Netto') . '</option>
+      </select>
   </div>
   <br />
       <div class="form-group">
@@ -758,19 +759,20 @@ class AktCsv extends Module
          </label>
         </div>
     </div>
-        <br />
 
-<h3>' . $this->l('Opcje tworzenia pliku z brakującymi produktami') . '</h3>
-<div class="form-group">
-    <div class="checkbox">
-         <label>
-            <input type="checkbox" name="logProductsNotInDB" value="1" checked="checked" /> ' . $this->l(
-                'Sprawdzać produkty których nie ma w sklepie a są w pliku *csv?'
-            ) . '
-         </label>
+    <br />
+
+    <h3>' . $this->l('Opcje tworzenia pliku z brakującymi produktami') . '</h3>
+    <div class="form-group">
+        <div class="checkbox">
+             <label>
+                <input type="checkbox" name="logProductsNotInDB" value="1" checked="checked" /> ' . $this->l(
+                    'Sprawdzać produkty których nie ma w sklepie a są w pliku *csv?'
+                ) . '
+             </label>
+        </div>
     </div>
-</div>
-<br />
+    <br />
     <div class="form-group">
         <label class="control-label required" for="limit">
         <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="Jaki limit sztuk na magazynie?">
@@ -788,21 +790,21 @@ class AktCsv extends Module
         </label>
             <input type="text" name="filtr1" value="' . Configuration::get($this->name . '_FILTR1') . '">
     </div>
-            <br />
-            <br/>
-<h3>' . $this->l('Id_shop, w którym chcesz dokonac aktualizacji') . '</h3>
-<div class="form-group">
-    <label class="control-label required" for="id_shop">
-        <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="W ktorym sklepie zrobic aktualizacje? Ignoruj jesli nie uzywasz Multistore.">
-        ' . $shop_name . '
-    </label>
-    <input type="text" name="id_shop" value="' . $id_shop . '">
-</div>
+    <br />
+    <br/>
+    <h3>' . $this->l('Id_shop, w którym chcesz dokonac aktualizacji') . '</h3>
+    <div class="form-group">
+        <label class="control-label required" for="id_shop">
+            <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="W ktorym sklepie zrobic aktualizacje? Ignoruj jesli nie uzywasz Multistore.">
+            ' . $shop_name . '
+        </label>
+        <input type="text" name="id_shop" value="' . $id_shop . '">
+    </div>
 <br />
-<div class="panel-footer">
-    <input type="submit" name="submit_update" value="' . $this->l('Przeprowadź aktualizację') . '" class="buttonFinish btn btn-success" />
-     ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '
-</div>
+    <div class="panel-footer">
+        <input type="submit" name="submit_update" value="' . $this->l('Przeprowadź aktualizację') . '" class="buttonFinish btn btn-success" />
+         ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '
+    </div>
 </div>
 </form>
 
@@ -810,16 +812,19 @@ class AktCsv extends Module
 <br />
 
 <div class="panel">
-<div class="panel-heading">
-' . $this->l('Log file') . '
-</div>
-    <p>' . $this->l('Ostatnio wygenerowany plik z brakującymi produktam:') . ' '
-            . '<b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/log/missed_products.txt">missed_products.txt</a></b>
-    </p>
-    <p>' . $this->l('Jesli nie mozna otworzyc pliku, to musisz uzyc FTP.') . '</p>
+    <div class="panel-heading">
+    ' . $this->l('Log file') . '
+    </div>
+    <div class="panel-body">
+        <p>' . $this->l('Ostatnio wygenerowany plik z brakującymi produktam:') . ' '
+                . '<b><a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/log/missed_products.txt">missed_products.txt</a></b>
+        </p>
+        <p>' . $this->l('Jesli nie mozna otworzyc pliku, to musisz uzyc FTP.') . '</p>
+    </div>
 </div>
 
 </div><!-- max-width-->
+
 <br />
 <br />
 <br />
@@ -848,7 +853,7 @@ class AktCsv extends Module
     ' . $this->l('Moduł można szybko dostosować do indywidualnych potrzeb.') . '
     </p>
   </div>
-  </div>';
+</div>';
         return $this->_html;
     }
 
