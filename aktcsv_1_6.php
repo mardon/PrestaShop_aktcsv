@@ -277,7 +277,7 @@ class AktCsv extends Module
                     ($attributes == 1 && $idProduct == 0 && empty($productWithAttribute))
                 ) {
                     $countMissedProducts++;
-                    $this->logMissedProduct($handleNotInDB, $numer, $info);
+                    $this->logMissedProduct($handleNotInDB, $numer, $info, $filtr1);
                 }
             } else { //legacy code to be removed
                 $counter++;
@@ -471,13 +471,19 @@ class AktCsv extends Module
 
     /**
      * @param $handleNotInDB
-     * @param $numer
-     * @param $reference
-     * @param $price
-     * @param $quantity
+     * @param string $numer
+     * @param array $info
+     * @param string $filter
      */
-    private function logMissedProduct($handleNotInDB, $numer, $info)
+    private function logMissedProduct($handleNotInDB, $numer, $info, $filtr)
     {
+    	//Check if name is in filter
+    	if (!empty($filtr) && isset($info['name']) && !empty($info['name'])) {
+    		$isFound = stripos($info['name'], $filtr);
+    		if ($isFound === false) {
+    			return;
+    		}
+    	}
         $line = 'Product not found in DB: ' . $numer . ' = ' . $info["index"];
         if (isset($info['price'])) {
             $line .= ', New price - ' . $info['price'];
