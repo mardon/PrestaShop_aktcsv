@@ -17,6 +17,8 @@ class AktCsv extends Module
     const PRICE_GROSS = 1;
     private $_html = '';
     protected $column_mask = array();
+    protected $countMissedProducts = 0;
+    protected $db;
 
     function __construct()
     {
@@ -157,6 +159,8 @@ class AktCsv extends Module
     {
         $codeStart = microtime(true);
 
+        $this->db = DB::getInstance();
+
         $separator = ($separator = Tools::substr(strval(trim(Tools::getValue('separator'))), 0, 1)) ? $separator : ';';
         Configuration::updateValue($this->name . '_SEPARATOR', $separator);
         $numer = Tools::getValue("numer");
@@ -185,7 +189,6 @@ class AktCsv extends Module
         $countProductsInCSV = 0;
         $countFoundProducts = 0;
         $foundProductsWithAttribute = 0;
-        $countMissedProducts = 0;
         $counter = 0;
 
         //TODO: TEST reset stocks
@@ -276,7 +279,6 @@ class AktCsv extends Module
                 if (($attributes == 0 && $idProduct == 0) ||
                     ($attributes == 1 && $idProduct == 0 && empty($productWithAttribute))
                 ) {
-                    $countMissedProducts++;
                     $this->logMissedProduct($handleNotInDB, $numer, $info, $filtr1);
                 }
             } else { //legacy code to be removed
@@ -317,9 +319,8 @@ class AktCsv extends Module
             ' . $this->l('Products with attribute found in DB') . ': <b>' . $foundProductsWithAttribute . '</b><br />'
             . $this->l('Set profit') . ': <b>' . $profit . '%, profit(plus): ' . $profit_plus . '</b>.<br/>
             ' . $this->l('Execution time') . ': <b>' . $elapsedTime . '</b> seconds<br/>'
-            . $this->l(
-                'In file "missed_products.txt": filtr'
-            ) . '= <b>' . $filtr1 . '</b>, Number of records: <b>' . $countMissedProducts . '</b>.<br/>'
+            . $this->l('In file ') .'<a style="text-decoration: underline;" href="' . _MODULE_DIR_ . 'aktcsv/log/missed_products.txt">missed_products.txt</a>, using filtr
+            = <b>' . $filtr1 . '</b>,  you can find <b>' . $this->countMissedProducts . '</b> records.<br/>'
         );
     }
 
@@ -327,21 +328,21 @@ class AktCsv extends Module
     {
         $values['quantity'] = 0;
 
-        return Db::getInstance()->update('product', $values, '', 0, false, false);
+        return $this->db->update('product', $values, '', 0, false, false);
     }
 
     private function clearStockAvailable()
     {
         $values['quantity'] = 0;
 
-        return Db::getInstance()->update('stock_available', $values, '', 0, false, false);
+        return $this->db->update('stock_available', $values, '', 0, false, false);
     }
 
     private function clearStocksWithAttributes()
     {
         $values['quantity'] = 0;
 
-        return Db::getInstance()->update('product_attribute', $values, '', 0, false, false);
+        return $this->db->update('product_attribute', $values, '', 0, false, false);
     }
 
     private function _clearCSVPrice($priceToClear)
@@ -390,7 +391,7 @@ class AktCsv extends Module
         if (!is_null($priceNet)) {
             $values['price'] = $priceNet;
         }
-        return Db::getInstance()->update('product', $values, $numer . ' = \'' . $ref . '\' ');
+        return $this->db->update('product', $values, $numer . ' = \'' . $ref . '\' ');
     }
 
     private function _getTaxRate($idProduct, $id_shop)
@@ -415,7 +416,7 @@ class AktCsv extends Module
 
     private function _updateProductPriceInShop($priceNet, $idProduct, $id_shop)
     {
-        return Db::getInstance()->update(
+        return $this->db->update(
             'product_shop',
             array(
                 'price' => $priceNet,
@@ -454,7 +455,7 @@ class AktCsv extends Module
             $values['price'] = $priceNet;
         }
 
-        return Db::getInstance()->update('product_attribute', $values, $numer . ' = \'' . $ref . '\' ');
+        return $this->db->update('product_attribute', $values, $numer . ' = \'' . $ref . '\' ');
     }
 
     protected function openLogFile()
@@ -495,6 +496,8 @@ class AktCsv extends Module
             $line .= ', Item Name - ' . $info['name'];
         }
         fwrite($handleNotInDB, $line .  "\n\r");
+
+        $this->countMissedProducts++;
     }
 
     protected function receiveTab()
