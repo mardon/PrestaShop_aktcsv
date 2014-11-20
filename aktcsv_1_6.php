@@ -375,7 +375,7 @@ class AktCsv extends Module
             return 0;
         }
 
-        $idProduct = (int)Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+        $idProduct = (int)$this->db->getValue(
             "SELECT id_product FROM `" . _DB_PREFIX_ . "product` WHERE `" . $numer . "`='" . $reference . "'",
             0
         );
@@ -396,7 +396,7 @@ class AktCsv extends Module
 
     private function _getTaxRate($idProduct, $id_shop)
     {
-        return DB::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+        return $this->db->getValue(
             '
                 SELECT ' . _DB_PREFIX_ . 'tax.rate
                 FROM ' . _DB_PREFIX_ . 'tax, ' . _DB_PREFIX_ . 'product_shop
@@ -411,7 +411,9 @@ class AktCsv extends Module
     {
         $priceGross = number_format($price, 2, ".", "");
         $taxRate = ($taxRate + 100) / 100;
-        return number_format(($priceGross / $taxRate), 2, ".", "");
+        $priceNet = ($priceGross / $taxRate);
+
+        return number_format($priceNet, 2, ".", "");
     }
 
     private function _updateProductPriceInShop($priceNet, $idProduct, $id_shop)
@@ -440,7 +442,7 @@ class AktCsv extends Module
 
         $sql = "SELECT id_product, id_product_attribute FROM `" . _DB_PREFIX_ . "product_attribute`
                 WHERE " . $numer . " = '" . $reference . "'";
-        $productWithAttribute = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow($sql, 0);
+        $productWithAttribute = $this->db->getRow($sql, 0);
 
         return $productWithAttribute;
     }
@@ -534,6 +536,9 @@ class AktCsv extends Module
             $shop_name = $context->shop->domain;
         }
 
+        if (version_compare(_PS_VERSION_, '1.6', '<')) {
+            $this->_html .= '<div class="bootstrap">';
+        }
         $this->_html .= '<p>Commercial use? Maybe some small donation?</p>
 <div style="max-width: 500px;">
     <form class="form-horizontal" role="form" method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
@@ -820,7 +825,7 @@ class AktCsv extends Module
     ' . $this->l('Informacje') . '</div>
   <div class="panel-body">
     <p style="text-align:center;">Potrzebujesz pomocy, modyfikacji?<br />
- PS 1.5.6.2, 1.6.0.9: <b><a href="mailto:leszek.pietrzak@gmail.com">Leszek.Pietrzak@gmail.com</a></b><br />
+ PS 1.5.4.1, 1.5.6.2, 1.6.0.9: <b><a href="mailto:leszek.pietrzak@gmail.com">Leszek.Pietrzak@gmail.com</a></b><br />
     </p>
     <br />
     <p>' . $this->l('Moduł ten aktualizuje ceny oraz stany magazynowe z pliku *.csv.') . '
@@ -840,7 +845,189 @@ class AktCsv extends Module
     </p>
   </div>
 </div>';
-        return $this->_html;
+
+    $style15 =  '</div>
+<style type="text/css">
+#content .bootstrap .alert.alert-info, .bootstrap #carrier_wizard .alert-info.wizard_error {
+    background-color: #f8fcfe;
+    border: 1px solid #c5e9f3;
+    color: #31b0d5;
+    padding-left: 50px;
+    position: relative;
+}
+#content .bootstrap .alert-info {
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+    color: #31708f;
+}
+#content .bootstrap .alert, .bootstrap #carrier_wizard .wizard_error {
+    border: 1px solid transparent;
+    border-radius: 3px;
+    margin-bottom: 17px;
+    padding: 15px;
+}
+#content .bootstrap .alert.alert-info:before, .bootstrap #carrier_wizard .alert-info.wizard_error:before {
+    color: #81cfe6;
+    display: block;
+    height: 25px;
+    left: 7px;
+    position: absolute;
+    top: 6px;
+    width: 25px;
+}
+.bootstrap p {
+    margin: 0 0 8.5px;
+}
+.bootstrap .panel-body:before, .bootstrap .panel-body:after {
+    content: " ";
+    display: table;
+}
+
+.bootstrap .panel-body:after {
+    clear: both;
+}
+.bootstrap .panel-body:before, .bootstrap .panel-body:after {
+    content: " ";
+    display: table;
+}
+
+.bootstrap .panel-body {
+    padding: 15px;
+}
+.bootstrap .panel .panel-footer, .bootstrap #dash_version .panel-footer, .bootstrap .message-item-initial .message-item-initial-body .panel-footer, .bootstrap .timeline .timeline-item .timeline-caption .timeline-panel .panel-footer {
+    background-color: #fcfdfe;
+    border-color: #eee;
+    height: 73px;
+    margin: 15px -20px -20px;
+}
+.bootstrap .panel-footer {
+    background-color: #f5f5f5;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-top: 1px solid #ddd;
+    padding: 10px 15px;
+}
+.bootstrap .panel .panel-heading, .bootstrap #dash_version .panel-heading, .bootstrap .message-item-initial .message-item-initial-body .panel-heading, .bootstrap .timeline .timeline-item .timeline-caption .timeline-panel .panel-heading {
+    color: #555;
+    font-family: "Ubuntu Condensed",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    height: 32px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.bootstrap h3:not(.modal-title), .bootstrap .panel-heading {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: -moz-use-text-color -moz-use-text-color #eee;
+    border-image: none;
+    border-style: none none solid;
+    border-width: medium medium 1px;
+    font-size: 1.2em;
+    height: 2.2em;
+    line-height: 2.2em;
+    margin: -20px -16px 15px;
+    padding: 0 0 0 5px;
+    text-transform: uppercase;
+}
+.bootstrap .panel-heading {
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    padding: 10px 15px;
+}
+.bootstrap .panel, .bootstrap #dash_version, .bootstrap .message-item-initial .message-item-initial-body, .bootstrap .timeline .timeline-item .timeline-caption .timeline-panel {
+    background-color: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 5px;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1), 0 0 0 3px #fff inset;
+    margin-bottom: 20px;
+    padding: 20px;
+    position: relative;
+}
+.bootstrap .panel, .bootstrap #dash_version, .bootstrap .message-item-initial .message-item-initial-body, .bootstrap .timeline .timeline-item .timeline-caption .timeline-panel {
+    background-color: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 5px;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1), 0 0 0 3px #fff inset;
+    margin-bottom: 20px;
+    padding: 20px;
+    position: relative;
+}
+}
+.bootstrap .radio label, .bootstrap .checkbox label {
+    cursor: pointer;
+    font-weight: normal;
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+.bootstrap label {
+    display: inline-block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    max-width: 100%;
+}
+.bootstrap .radio label, .bootstrap .checkbox label {
+    cursor: pointer;
+    font-weight: normal;
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+.bootstrap label {
+    display: inline-block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    max-width: 100%;
+}
+.bootstrap .form-horizontal .radio, .bootstrap .form-horizontal .checkbox {
+    min-height: 22px;
+}
+.bootstrap .form-horizontal .radio, .bootstrap .form-horizontal .checkbox, .bootstrap .form-horizontal .radio-inline, .bootstrap .form-horizontal .checkbox-inline {
+    margin-bottom: 0;
+    margin-top: 0;
+    padding-top: 5px;
+}
+.bootstrap .radio, .bootstrap .checkbox {
+    display: block;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    min-height: 17px;
+}
+.bootstrap .form-horizontal .form-group:before, .bootstrap .form-horizontal .form-group:after {
+    content: " ";
+    display: table;
+}
+.bootstrap *:before, .bootstrap *:after {
+    box-sizing: border-box;
+}
+.bootstrap .form-horizontal .form-group:after {
+    clear: both;
+}
+.bootstrap .form-horizontal .form-group:before, .bootstrap .form-horizontal .form-group:after {
+    content: " ";
+    display: table;
+}
+.bootstrap *:before, .bootstrap *:after {
+    box-sizing: border-box;
+}
+.bootstrap .form-horizontal .form-group {
+    margin-left: -5px;
+    margin-right: -5px;
+}
+.bootstrap .form-group {
+    margin-bottom: 15px;
+}
+.bootstrap * {
+    box-sizing: border-box;
+}
+</style>';
+
+        if (version_compare(_PS_VERSION_, '1.6', '<')) {
+            $this->_html .= $style15;
+        }
+            return $this->_html;
     }
 
 //product_shop 	Product shop associations 	id_product, id_shop
