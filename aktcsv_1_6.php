@@ -212,12 +212,12 @@ class AktCsv extends Module
                 $price = $this->_clearCSVPrice($info['price']);
                 $price = $this->calculateFinalPrice($price, $profit, $profit_plus);
             } else {
-                $price = '';
+                $price = null;
             }
             if (isset($info['stock'])) {
                 $quantity = $this->_clearCSVIQuantity($info['stock']);
             } else {
-                $quantity = '';
+                $quantity = null;
             }
 
 
@@ -227,11 +227,11 @@ class AktCsv extends Module
             if ($idProduct > 0) {
                 $countFoundProducts++;
 
-                if (!empty($quantity)) {
+                if (!is_null($quantity)) {
                     StockAvailable::setQuantity($idProduct, 0, $quantity, $id_shop);
                     $this->_updateProductWithOutAttribute($numer, $reference, null, $quantity);
                 }
-                if (!empty($price)) {
+                if (!is_null($price)) {
                     if ($gross == self::PRICE_GROSS) {
                         $taxRate = $this->_getTaxRate($idProduct, $id_shop);
                         $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
@@ -253,7 +253,7 @@ class AktCsv extends Module
                     $idProductWithAttribute = $productWithAttribute['id_product'];
                     $idProductAttribute = $productWithAttribute['id_product_attribute'];
 
-                    if (!empty($quantity)) {
+                    if (!is_null($quantity)) {
                         StockAvailable::setQuantity($idProductWithAttribute, $idProductAttribute, $quantity, $id_shop);
                         $this->_updateProductWithAttribute($numer, $reference, null, $quantity);
                     }
