@@ -569,7 +569,7 @@ class AktCsv extends Module
 <form class="form-horizontal" role="form" method="post"  action="' . $_SERVER['REQUEST_URI'] . '">
 <div class="panel">
     <div class="panel-heading">
-        <i class="icon-money"></i>' . $this->l('Główne funkcje modułu') . '
+        <i class="icon-money"></i> ' . $this->l('Główne funkcje modułu') . '
     </div>
 
     <div class="alert alert-info">' . $this->l(
@@ -726,8 +726,8 @@ class AktCsv extends Module
             </span>
         </label>
         <select class="form-control" name="gross">
-          <option value="1" selected="selected">' . $this->l('Brutto') . '</option>
-          <option value="0">' . $this->l('Netto') . '</option>
+          <option value="1">' . $this->l('Brutto') . '</option>
+          <option value="0" selected="selected">' . $this->l('Netto') . '</option>
       </select>
   </div>
   <br />
