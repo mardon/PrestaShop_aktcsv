@@ -24,7 +24,7 @@ class AktCsv extends Module
     {
         $this->name = 'aktcsv';
         $this->tab = 'Others';
-        $this->version = '4.141111'; //Independence day version
+        $this->version = '4.150917';
         $this->author = 'LPP';
 
         $this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6');
@@ -566,7 +566,7 @@ class AktCsv extends Module
     <br />
     <br />
 
-<form class="form-horizontal" role="form" method="post"  action="' . $_SERVER['REQUEST_URI'] . '">
+<form class="form-horizontal" role="form" method="post" action="' . $_SERVER['REQUEST_URI'] . '">
 <div class="panel">
     <div class="panel-heading">
         <i class="icon-money"></i> ' . $this->l('Główne funkcje modułu') . '
@@ -604,9 +604,7 @@ class AktCsv extends Module
             <tr>
                 <td>
                     <select class="form-control type_value"  id="type_value[0]" name="type_value[0]" >
-                      <option value="index"' . ((Configuration::get(
-                        $this->name . '_TYPEVALUE0'
-                    ) == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
+                      <option value="index"' . ((Configuration::get($this->name . '_TYPEVALUE0') == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
                       <option value="price"' . ((Configuration::get(
                         $this->name . '_TYPEVALUE0'
                     ) == "price") ? ' selected="selected"' : '') . '>' . $this->l('Price') . '</option>
@@ -726,8 +724,8 @@ class AktCsv extends Module
             </span>
         </label>
         <select class="form-control" name="gross">
-          <option value="1">' . $this->l('Brutto') . '</option>
-          <option value="0" selected="selected">' . $this->l('Netto') . '</option>
+          <option value="1" ' . ((Configuration::get($this->name . '_GROSS') == "1") ? ' selected="selected"' : '') . '>' . $this->l('Brutto') . '</option>
+          <option value="0" ' . ((Configuration::get($this->name . '_GROSS') == "0") ? ' selected="selected"' : '') . '>' . $this->l('Netto') . '</option>
       </select>
   </div>
   <br />
