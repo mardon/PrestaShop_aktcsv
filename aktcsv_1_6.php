@@ -24,7 +24,7 @@ class AktCsv extends Module
     {
         $this->name = 'aktcsv';
         $this->tab = 'Others';
-        $this->version = '4.141111'; //Independence day version
+        $this->version = '4.150917';
         $this->author = 'LPP';
 
         $this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6');
@@ -212,12 +212,12 @@ class AktCsv extends Module
                 $price = $this->_clearCSVPrice($info['price']);
                 $price = $this->calculateFinalPrice($price, $profit, $profit_plus);
             } else {
-                $price = '';
+                $price = null;
             }
             if (isset($info['stock'])) {
                 $quantity = $this->_clearCSVIQuantity($info['stock']);
             } else {
-                $quantity = '';
+                $quantity = null;
             }
 
 
@@ -227,11 +227,11 @@ class AktCsv extends Module
             if ($idProduct > 0) {
                 $countFoundProducts++;
 
-                if (!empty($quantity)) {
+                if (!is_null($quantity)) {
                     StockAvailable::setQuantity($idProduct, 0, $quantity, $id_shop);
                     $this->_updateProductWithOutAttribute($numer, $reference, null, $quantity);
                 }
-                if (!empty($price)) {
+                if (!is_null($price)) {
                     if ($gross == self::PRICE_GROSS) {
                         $taxRate = $this->_getTaxRate($idProduct, $id_shop);
                         $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
@@ -253,7 +253,7 @@ class AktCsv extends Module
                     $idProductWithAttribute = $productWithAttribute['id_product'];
                     $idProductAttribute = $productWithAttribute['id_product_attribute'];
 
-                    if (!empty($quantity)) {
+                    if (!is_null($quantity)) {
                         StockAvailable::setQuantity($idProductWithAttribute, $idProductAttribute, $quantity, $id_shop);
                         $this->_updateProductWithAttribute($numer, $reference, null, $quantity);
                     }
@@ -566,10 +566,10 @@ class AktCsv extends Module
     <br />
     <br />
 
-<form class="form-horizontal" role="form" method="post"  action="' . $_SERVER['REQUEST_URI'] . '">
+<form class="form-horizontal" role="form" method="post" action="' . $_SERVER['REQUEST_URI'] . '">
 <div class="panel">
     <div class="panel-heading">
-        <i class="icon-money"></i>' . $this->l('Główne funkcje modułu') . '
+        <i class="icon-money"></i> ' . $this->l('Główne funkcje modułu') . '
     </div>
 
     <div class="alert alert-info">' . $this->l(
@@ -604,9 +604,7 @@ class AktCsv extends Module
             <tr>
                 <td>
                     <select class="form-control type_value"  id="type_value[0]" name="type_value[0]" >
-                      <option value="index"' . ((Configuration::get(
-                        $this->name . '_TYPEVALUE0'
-                    ) == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
+                      <option value="index"' . ((Configuration::get($this->name . '_TYPEVALUE0') == "index") ? ' selected="selected"' : '') . '>' . $this->l('Index') . '</option>
                       <option value="price"' . ((Configuration::get(
                         $this->name . '_TYPEVALUE0'
                     ) == "price") ? ' selected="selected"' : '') . '>' . $this->l('Price') . '</option>
@@ -726,8 +724,8 @@ class AktCsv extends Module
             </span>
         </label>
         <select class="form-control" name="gross">
-          <option value="1" selected="selected">' . $this->l('Brutto') . '</option>
-          <option value="0">' . $this->l('Netto') . '</option>
+          <option value="1" ' . ((Configuration::get($this->name . '_GROSS') == "1") ? ' selected="selected"' : '') . '>' . $this->l('Brutto') . '</option>
+          <option value="0" ' . ((Configuration::get($this->name . '_GROSS') == "0") ? ' selected="selected"' : '') . '>' . $this->l('Netto') . '</option>
       </select>
   </div>
   <br />
