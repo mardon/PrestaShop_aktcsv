@@ -30,4 +30,3 @@ Then examine the backup file - does it look like it holds all your data??
 - Turn on MAINTENANCE MODE. You don't want customers confusing things.
 - TEST IT THOROUGHLY. If you are not convinced everything is right, restore from your backup!
 - 
-http://apokalipsa-iskra.pl/pl/aktualnosci/przepowiednie
