@@ -689,6 +689,9 @@ class AktCsv extends Module
           <option value="reference"' . ((Configuration::get(
                         $this->name . '_NUMER'
                     ) == "reference") ? ' selected="selected"' : '') . '>' . $this->l('Kod produktu') . '</option>
+                    <option value="ID_PRODUKTY"' . ((Configuration::get(
+                        $this->name . '_NUMER'
+                    ) == "ID_PRODUKTY") ? ' selected="selected"' : '') . '>ID_PRODUKTY</option>
           <option value="ean13"' . ((Configuration::get(
                         $this->name . '_NUMER'
                     ) == "ean13") ? ' selected="selected"' : '') . '>EAN13</option>
@@ -822,9 +825,7 @@ class AktCsv extends Module
   <div class="panel-heading"><i class="icon-lightbulb"></i>
     ' . $this->l('Informacje') . '</div>
   <div class="panel-body">
-    <p style="text-align:center;">Potrzebujesz pomocy, modyfikacji?<br />
- PS 1.5.4.1, 1.5.6.2, 1.6.0.9: <b><a href="mailto:leszek.pietrzak@gmail.com">Leszek.Pietrzak@gmail.com</a></b><br />
-    </p>
+     <p style="text-align:center;">Potrzebujesz pomocy, modyfikacji? Zapytaj na forum.</p>
     <br />
     <p>' . $this->l('Moduł ten aktualizuje ceny oraz stany magazynowe z pliku *.csv.') . '
     <br />
