@@ -24,7 +24,7 @@ class AktCsv extends Module
     {
         $this->name = 'aktcsv';
         $this->tab = 'Others';
-        $this->version = '4.150917';
+        $this->version = '4.160410'; //Smolensk edition
         $this->author = 'LPP';
 
         $this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6');
@@ -62,6 +62,7 @@ class AktCsv extends Module
         Configuration::updateValue($this->name . '_TYPEVALUE1', 'name');
         Configuration::updateValue($this->name . '_TYPEVALUE2', 'price');
         Configuration::updateValue($this->name . '_TYPEVALUE3', 'stock');
+        Configuration::updateValue($this->name . '_CUSTOMID', '0');        
 
         return true;
     }
@@ -86,6 +87,8 @@ class AktCsv extends Module
             $this->name . '_TYPEVALUE0'
         ) && Configuration::deleteByName(
             $this->name . '_GROSS'
+        )&& Configuration::deleteByName(
+            $this->name . '_CUSTOMID'
         );
     }
 
@@ -175,12 +178,15 @@ class AktCsv extends Module
         Configuration::updateValue($this->name . '_LIMIT', $limit);
         $filtr1 = Tools::getValue("filtr1");
         Configuration::updateValue($this->name . '_FILTR1', $filtr1);
+        $custom_id= Tools::getValue("custom_id");
+        Configuration::updateValue($this->name . '_CUSTOMID', $custom_id);
 
         $this->receiveTab();
 
         $logProductsNotInDB = (Tools::getValue("logProductsNotInDB") == "1") ? 1 : 0;
         $clearStocksMode = (Tools::getValue("clearStocksMode") == "1") ? 1 : 0;
         $attributes = (Tools::getValue("atrybuty") == "1") ? 1 : 0;
+        Configuration::updateValue($this->name . '_ATRYBUTY', $attributes);
         $id_shop = (int)Tools::getValue("id_shop");
 
         $handleCSVFile = fopen('../modules/aktcsv/import/' . Configuration::get($this->name . '_CSVFILE'), 'r');
@@ -225,22 +231,36 @@ class AktCsv extends Module
             $idProduct = $this->isProductInDB($numer, $reference);
 
             if ($idProduct > 0) {
-                $countFoundProducts++;
+                $countFoundProducts++;                
 
-                if (!is_null($quantity)) {
-                    StockAvailable::setQuantity($idProduct, 0, $quantity, $id_shop);
-                    $this->_updateProductWithOutAttribute($numer, $reference, null, $quantity);
-                }
-                if (!is_null($price)) {
-                    if ($gross == self::PRICE_GROSS) {
-                        $taxRate = $this->_getTaxRate($idProduct, $id_shop);
-                        $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
-                    } else {
-                        $priceNet = $price;
+                if($custom_id == 1)
+                {                   
+                    //Product without customid column in attribute table 
+                    $idProductAttribute = $this->getProductAttribute($idProduct);
+
+                    if (!is_null($quantity)) {
+                      StockAvailable::setQuantity($idProduct, $idProductAttribute, $quantity, $id_shop);
                     }
+                } 
+                else
+                {
+                    $idProductAttribute = 0;
 
-                    $this->_updateProductPriceInShop($priceNet, $idProduct, $id_shop);
-                    $this->_updateProductWithOutAttribute($numer, $reference, $priceNet, null);
+                    if (!is_null($quantity)) {
+                        StockAvailable::setQuantity($idProduct, $idProductAttribute, $quantity, $id_shop);
+                        $this->_updateProductWithOutAttribute($numer, $reference, null, $quantity);
+                    }
+                    if (!is_null($price)) {
+                        if ($gross == self::PRICE_GROSS) {
+                            $taxRate = $this->_getTaxRate($idProduct, $id_shop);
+                            $priceNet = $this->_calculateAndFormatNetPrice($price, $taxRate);
+                        } else {
+                            $priceNet = $price;
+                        }
+
+                        $this->_updateProductPriceInShop($priceNet, $idProduct, $id_shop);
+                        $this->_updateProductWithOutAttribute($numer, $reference, $priceNet, null);
+                    }
                 }
             }
 
@@ -445,6 +465,19 @@ class AktCsv extends Module
         $productWithAttribute = $this->db->getRow($sql, 0);
 
         return $productWithAttribute;
+    }
+
+        /**
+     * @param $id_product
+     * @return id_product_attribute
+     */
+    private function getProductAttribute($id_product)
+    {
+        $sql = "SELECT id_product, id_product_attribute FROM `" . _DB_PREFIX_ . "product_attribute`
+                WHERE id_product = " . $id_product;
+        $productWithAttribute = $this->db->getRow($sql, 0);
+
+        return $productWithAttribute['id_product_attribute'];
     }
 
     private function _updateProductWithAttribute($numer, $ref, $priceNet = null, $quantity = null)
@@ -689,9 +722,9 @@ class AktCsv extends Module
           <option value="reference"' . ((Configuration::get(
                         $this->name . '_NUMER'
                     ) == "reference") ? ' selected="selected"' : '') . '>' . $this->l('Kod produktu') . '</option>
-                    <option value="ID_PRODUKTY"' . ((Configuration::get(
+                    <option value="productid"' . ((Configuration::get(
                         $this->name . '_NUMER'
-                    ) == "ID_PRODUKTY") ? ' selected="selected"' : '') . '>ID_PRODUKTY</option>
+                    ) == "productid") ? ' selected="selected"' : '') . '>productid</option>
           <option value="ean13"' . ((Configuration::get(
                         $this->name . '_NUMER'
                     ) == "ean13") ? ' selected="selected"' : '') . '>EAN13</option>
@@ -745,13 +778,22 @@ class AktCsv extends Module
     <div class="form-group">
         <div class="checkbox">
          <label>
-            <input class="" type="checkbox" name="atrybuty" value="1" checked="checked" />' . $this->l(
+            <input class="" type="checkbox" name="atrybuty" value="1"  ' . ((Configuration::get($this->name . '_ATRYBUTY') == "1") ? ' checked' : '') . ' />' . $this->l(
                 'Mam w bazie produkty z atrybutami'
             ) . '
          </label>
         </div>
     </div>
-
+<br/>
+    <div class="form-group">
+        <div class="checkbox">
+         <label>
+            <input class="" type="checkbox" name="custom_id" value="1" ' . ((Configuration::get($this->name . '_CUSTOMID') == "1") ? ' checked' : '') . '/>' . $this->l(
+                'Mam w bazie produkty z wlasnym id'
+            ) . '
+         </label>
+        </div>
+    </div>
     <br />
 
     <h3>' . $this->l('Opcje tworzenia pliku z brakującymi produktami') . '</h3>
@@ -794,7 +836,7 @@ class AktCsv extends Module
     </div>
 <br />
     <div class="panel-footer">
-        <input type="submit" name="submit_update" value="' . $this->l('Przeprowadź aktualizację') . '" class="buttonFinish btn btn-success" />
+        <input type="submit" name="submit_update" value="' . $this->l('Przeprowadź aktualizację') . '" class="buttonFinish btn btn-lg btn-success" />
          ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '
     </div>
 </div>
