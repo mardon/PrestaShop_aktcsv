@@ -190,6 +190,11 @@ class AktCsv extends Module
         $id_shop = (int)Tools::getValue("id_shop");
 
         $handleCSVFile = fopen('../modules/aktcsv/import/' . Configuration::get($this->name . '_CSVFILE'), 'r');
+
+        if ($handleCSVFile === FALSE) {
+            die("Nie mozna otworzyc pliku CSV: " . Configuration::get($this->name . '_CSVFILE') . " w katalogu /modules/aktcsv/import/");
+        }
+
         $handleNotInDB = $this->openLogFile();
 
         $countProductsInCSV = 0;
@@ -1077,4 +1082,5 @@ class AktCsv extends Module
 //Product attribute shop associations
 //product_attribute_shop.`price`
 
+//2016-04-12: Jesli nie mozna otworzyc pliku CSV - skrypt konczy dzialanie, zamiast wpadac w petle.
 }
