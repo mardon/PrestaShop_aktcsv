@@ -577,7 +577,7 @@ class AktCsv extends Module
         if (version_compare(_PS_VERSION_, '1.6', '<')) {
             $this->_html .= '<div class="bootstrap">';
         }
-        $this->_html .= '<p>Commercial use? Maybe some small donation?</p>
+        $this->_html .= '<p>W przypadku uzycia tego modulu (Twoj sklep) prosze o datek milosierdzia dla potrzebujacych.</p>
 <div style="max-width: 500px;">
     <form class="form-horizontal" role="form" method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">
         <div class="panel">
