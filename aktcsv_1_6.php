@@ -562,6 +562,24 @@ class AktCsv extends Module
         return $res;
     }
 
+    protected function getWarehousesForShop($id_shop)
+    {
+        $warehouses = '<select name="id_warehouse" id="id_warehouse">';
+
+        $res = WarehouseCore::getWarehouses(false, $id_shop);
+        if (is_array($res))
+        {
+            foreach ($res as $warehouse)
+            {
+                $warehouses .= '<option value="'.$warehouse['id_warehouse'].'">"'.$warehouse['id_warehouse'] .' - '.$warehouse['name'].'"</option>';
+            }                           
+        }
+
+        $warehouses .= '</select>';
+
+        return $warehouses;
+    }
+
 
     public function displayForm()
     {
@@ -840,6 +858,17 @@ class AktCsv extends Module
         <input type="text" name="id_shop" value="' . $id_shop . '">
     </div>
 <br />
+    <br/>
+    <h3>' . $this->l('Id_warehouse, w którym chcesz dokonac aktualizacji') . '</h3>
+    <div class="form-group">
+        <label class="control-label required" for="id_warehouse">
+            <span title="" data-html="true" data-toggle="tooltip" class="label-tooltip" data-original-title="W ktorym magazynie zrobic aktualizacje? Ignoruj jesli nie uzywasz ASM.">
+            Magazyny
+        </label>
+        '.$this->getWarehousesForShop($id_shop).'
+    </div>
+<br />
+
     <div class="panel-footer">
         <input type="submit" name="submit_update" value="' . $this->l('Przeprowadź aktualizację') . '" class="buttonFinish btn btn-lg btn-success" />
          ' . $this->l('Może trochę potrwać! - bądź cierpliwy...') . '
